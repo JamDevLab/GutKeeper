@@ -1,19 +1,21 @@
-# Änderungen
+# Changelog
+
+**English** · [Deutsch](CHANGELOG.de.md)
 
 ## 1.0.0
 
-Erste Veröffentlichung.
+First release.
 
-- **Erfassen** in Sekunden auf einer Seite: Konsistenz (Bristol-Skala), Stuhldrang, Menge, Farbe, Schmerzen, Blut, Schleim, Luft und Notiz mit bearbeitbaren Schlagwörtern; optional **Essen** mit Mahlzeit, Vorschlägen und angehefteten Speisen. Keine Einträge in der Zukunft.
-- **Verlauf** mit Filtern, **Jahresübersicht** und **Statistik:** Kennzahlen mit Vergleich zum Zeitraum davor, Anteil normal (Typ 3–4), aufklappbare Kachel „Auffälligkeiten“ mit Sprung in den gefilterten Verlauf, Stuhlgänge pro Tag/Woche, Ø Konsistenz im Verlauf, Tageszeit, Wochentag und Kalender. Ein Tipp auf den schon offenen Tab Verlauf oder Statistik scrollt nach oben. **Rückblick teilen:** ein Bild der letzten 7 Tage, des letzten Monats, des letzten Jahres (52 volle Wochen; jeweils bis gestern, damit nur abgeschlossene Tage zählen) oder eines eigenen Zeitraums in fünf Designs zum Durchwischen (Übersicht, Übersicht mit Skala, Formen, Tageszeit, Kalender), zum Teilen oder als Bild speichern, bewusst ohne heikle Angaben.
-- **PDF-Bericht** direkt im Browser: dieselben Auswertungen in jedem Umfang, Einträge kurz (nur Auffälligkeiten), normal oder ausführlich; optional Name und Geburtsdatum, Essen, Schwarz-Weiß und Passwortschutz (AES-256).
-- **Offline-first** mit Abgleich zwischen mehreren Geräten; ältere Einträge werden bei Bedarf live vom Server geladen.
-- **Anmeldung und Sicherheit:** Server-Passwort mit Einmal-Code bei der Einrichtung, optional mehrere Konten (Admin, vorläufige Passwörter, Konto löschen), App-Sperre per PIN mit Fingerabdruck/Gesicht, verschlüsselter Gerätespeicher und optionale Ende-zu-Ende-Verschlüsselung. Schutz vor DNS-Rebinding, Beschränkung auf private Netze, Bremse gegen das Durchprobieren von Passwörtern.
-- **Backups:** tägliche Server-Backups (optional verschlüsselt), JSON-/CSV-Export und -Import mit Vorschau, Export mit Passwort, Backup-Erinnerung; in der Android-App automatisches Backup in den Dokumente-Ordner (optional mit Passwort).
-- **Ohne Server nutzbar** als Web-App oder **Android-App (APK)**; die App lässt sich mit einem Server verbinden (auch über http im Heimnetz). In der Android-App lässt sich das Icon auf dem Startbildschirm wechseln.
-- **Acht eingebaute Icons** (`APP_ICON`): Bristol, Kranz, Wächter, Wappen, Klassisch, Schild, Liste und Tagebuch, alle auf Bristol-Grün; Wächter, Wappen, Schild, Liste und Tagebuch verraten auf dem Startbildschirm nichts. In der Android-App sind alle umschaltbar.
-- **Geführter Einstieg** beim ersten Start (abschaltbar mit `ONBOARDING=0`).
-- **Einstellungen in `data/settings.json`:** Mahlzeit-Zeiten, Zahl der Essensvorschläge, Farbtöne der Stuhlfarben, vorgegebene Notiz-Schlagwörter und angeheftete Speisen.
-- **Deutsch und Englisch**, Hell-/Dunkelmodus, angepasste Darstellung für Tablet und Desktop.
-- **Betrieb:** Docker-Image für amd64 und arm64 auf ghcr.io (gehärteter Container), kurze `docker-compose.yml` mit den wichtigsten Einstellungen und Vorlagen in `compose/` (auch mit allen Optionen), Server-Log und Admin-CLI auf Deutsch und Englisch, Werkzeuge zum Bauen der serverlosen Version und der APK, Tests für Server, Verschlüsselung und Oberfläche.
-- **Dokumentation** auf Englisch und Deutsch: kurze README, Details in `docs/` (Installation, Konfiguration, Daten und Sicherheit, Entwicklung).
+- **Logging** in seconds on one screen: consistency (Bristol scale), urgency, amount, color, pain, blood, mucus, gas and a note with editable tags; optional **food** with meal, suggestions and pinned foods. No entries in the future.
+- **History** with filters, **year overview** and **statistics:** key figures compared with the previous period, share of normal stools (type 3–4), an expandable "Notable entries" tile that jumps to the filtered history, stools per day/week, average consistency over time, time of day, weekday and calendar. Tapping the already open History or Statistics tab scrolls to the top. **Share a recap:** an image of the last 7 days, the last month, the last year (52 full weeks; each up to yesterday so only completed days count) or a custom period, in five designs you can swipe through (overview, overview with scale, shapes, time of day, calendar), to share or save as an image, deliberately without sensitive details.
+- **PDF report** generated in the browser: the same analyses in every size, entries short (notable ones only), normal or detailed; optional name and date of birth, food, black and white, and password protection (AES-256).
+- **Offline first** with sync between several devices; older entries are loaded live from the server when needed.
+- **Sign-in and security:** server password with a one-time code during setup, optional multiple accounts (admin, temporary passwords, delete account), app lock with PIN and fingerprint/face, encrypted device storage and optional end-to-end encryption. Protection against DNS rebinding, private networks only, rate limiting against password guessing.
+- **Backups:** daily server backups (optionally encrypted), JSON/CSV export and import with preview, export with password, backup reminder; in the Android app an automatic backup to the Documents folder (optionally with password).
+- **Works without a server** as a web app or **Android app (APK)**; the app can connect to a server (also over http on the home network). In the Android app you can switch the home screen icon.
+- **Eight built-in icons** (`APP_ICON`): Bristol, ring, guard, crest, classic, shield, list and diary, all on Bristol green; guard, crest, shield, list and diary reveal nothing on the home screen. All of them can be switched in the Android app.
+- **Guided first-run dialog** (turn off with `ONBOARDING=0`).
+- **Settings in `data/settings.json`:** meal times, number of food suggestions, shades of the stool colors, default note tags and pinned foods.
+- **English and German**, light/dark mode, adapted layout for tablet and desktop.
+- **Operation:** Docker image for amd64 and arm64 on ghcr.io (hardened container), a short `docker-compose.yml` with the main settings and templates in `compose/` (including one with all options), server log and admin CLI in German and English, tools to build the serverless version and the APK, tests for server, encryption and interface.
+- **Documentation** in English and German: a short README, details in `docs/` (installation, configuration, data and security, development).

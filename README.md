@@ -136,7 +136,7 @@ Details: [Security and privacy](docs/DATA.md#security-and-privacy) and [Encrypti
 - [docs/CONFIGURATION.md](docs/CONFIGURATION.md): Docker in detail, serverless build, HTTPS, environment variables, food, multiple accounts, app icon
 - [docs/DATA.md](docs/DATA.md): encryption, security and privacy, sync, backups, CSV format
 - [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md): project structure, tests, translations, helper scripts
-- [CHANGELOG.md](CHANGELOG.md): changes per version (in German)
+- [CHANGELOG.md](CHANGELOG.md): changes per version
 - [SECURITY.md](SECURITY.md): how to report a vulnerability
 - [CONTRIBUTING.md](CONTRIBUTING.md): how to contribute, including the CLA
 - [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md): third-party components and their licenses

@@ -136,7 +136,7 @@ Details: [Sicherheit und Datenschutz](docs/DATA.de.md#sicherheit-und-datenschutz
 - [docs/CONFIGURATION.de.md](docs/CONFIGURATION.de.md): Docker im Detail, serverlose Version, HTTPS, Umgebungsvariablen, Essen, mehrere Konten, App-Icon
 - [docs/DATA.de.md](docs/DATA.de.md): Verschlüsselung, Sicherheit und Datenschutz, Sync, Backups, CSV-Format
 - [docs/DEVELOPMENT.de.md](docs/DEVELOPMENT.de.md): Projektstruktur, Tests, Übersetzungen, Hilfsskripte
-- [CHANGELOG.md](CHANGELOG.md): Änderungen je Version
+- [CHANGELOG.de.md](CHANGELOG.de.md): Änderungen je Version
 - [SECURITY.md](SECURITY.md): Sicherheitslücken melden
 - [CONTRIBUTING.md](CONTRIBUTING.md): Mitwirken, einschließlich CLA
 - [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md): Fremdkomponenten und ihre Lizenzen

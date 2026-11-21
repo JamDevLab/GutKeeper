@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-GutKeeper (German subtitle in the German README: DarmWächter) is a self-hosted bowel diary PWA with offline support, multi-device sync, statistics and PDF reports. Licensed AGPL-3.0. Code comments, log output, the CHANGELOG and `docs/INSTALLATION.de.md` are in **German**; `README.md` is English (default on GitHub), `README.de.md` is the German version, `docs/INSTALLATION.md` the English installation guide. Keep new code comments in German to match. Server log and CLI output is bilingual: use `server/log.js` (`info/warn/error(de, en)`: German line, then English line); tests match the German text. Compose files and `.env.example` are commented in English.
+GutKeeper (German subtitle in the German README: DarmWächter) is a self-hosted bowel diary PWA with offline support, multi-device sync, statistics and PDF reports. Licensed AGPL-3.0. Code comments are in **German**. User docs come in pairs, English first: `X.md` is English (default on GitHub), `X.de.md` German (README, CHANGELOG, `docs/*`); `SECURITY.md`, `CONTRIBUTING.md` and `THIRD-PARTY-NOTICES.md` hold both languages, English first. Keep new code comments in German to match. Server log and CLI output is bilingual: use `server/log.js` (`info/warn/error(de, en)`: German line, then English line); tests match the German text. Compose files and `.env.example` are commented in English.
 
 **Zero dependencies:** there is no `node_modules` and no build step for the UI. The server uses only Node built-ins, including `node:sqlite` (experimental in Node 22, so it needs Node >= 22.13 and `--disable-warning=ExperimentalWarning`). Do not add npm packages.
 
@@ -61,7 +61,7 @@ npm run build:static      # serverless build into dist/ (env: APP_LANG, APP_ICON
 - `tools/build-apk.js [app folder, default android-app] [--release]` builds the serverless version, copies it into the Capacitor project, syncs and runs Gradle (JAVA_HOME = JDK 21, ANDROID_HOME). Version name/code come from `package.json`. `--release` signs with zipalign + apksigner using `APK_KEYSTORE` (outside the repo) and optional `APK_KEYSTORE_PASS`/`APK_KEY_PASS`/`APK_KEY_ALIAS` env vars; never put keys or passwords in files.
 - `tools/android-style.js <app folder>` puts the project's icons and a plain splash screen into a Capacitor Android project.
 - `tools/build-static.js` copies `public/` to `dist/`, fills the templates and picks the icon set. `tools/make-icons.js [set …]` generates the eight built-in icon sets (SVG motifs with named geometry constants, rendered with local Chrome/Edge; run with `TMPDIR=~/workspace/.t`).
-- Record user-visible changes in `CHANGELOG.md` (in German). The version lives in `package.json`.
+- Record user-visible changes in both `CHANGELOG.md` (English) and `CHANGELOG.de.md` (German), same `## <version>` headings; the release workflow puts both into the release notes, English first. The version lives in `package.json`.
 
 ## Design guidelines
 

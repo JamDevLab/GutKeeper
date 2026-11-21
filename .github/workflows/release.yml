@@ -136,20 +136,25 @@ jobs:
           VERSION="${TAG#v}"
           P="$(node -p "require('./package.json').version")"
           [ "$VERSION" = "$P" ] || { echo "::error::Tag $TAG passt nicht zu package.json ($P)"; exit 1; }
-          # Abschnitt "## <version>" bzw. "## [<version>]" aus dem CHANGELOG holen
-          VERSION="$VERSION" node -e '
-            const v = process.env.VERSION, lines = require("fs").readFileSync("CHANGELOG.md", "utf8").split(/\r?\n/);
+          # Abschnitt "## <version>" bzw. "## [<version>]" aus beiden CHANGELOGs holen: Englisch zuerst, dann Deutsch
+          section() { VERSION="$VERSION" node -e '
+            const v = process.env.VERSION, lines = require("fs").readFileSync(process.argv[1], "utf8").split(/\r?\n/);
             const head = (l) => l.replace(/^##\s*\[?/, "").trim().startsWith(v);
             const i = lines.findIndex((l) => /^##\s/.test(l) && head(l));
             let body = "";
             if (i >= 0) { let j = i + 1; while (j < lines.length && !/^##\s/.test(lines[j])) j++; body = lines.slice(i + 1, j).join("\n").trim(); }
-            process.stdout.write(body || "Änderungen siehe CHANGELOG.md.");
-          ' > notes.md
+            process.stdout.write(body || process.argv[2]);
+          ' "$1" "$2"; }
           {
-            printf '\n\n---\n\n'
-            printf '**Docker:** `docker pull ghcr.io/jamdevlab/gutkeeper:%s`\n\n' "$VERSION"
+            section CHANGELOG.md "See CHANGELOG.md."
+            printf '\n\n**Docker:** `docker pull ghcr.io/jamdevlab/gutkeeper:%s`\n\n' "$VERSION"
+            printf '**Android:** download and install `gutkeeper-%s.apk` (allow installing from unknown sources). Checksums in `SHA256SUMS.txt`.\n\n' "$VERSION"
+            printf '**Web without a server:** put `gutkeeper-web-%s.zip` on any web server (HTTPS).\n' "$VERSION"
+            printf '\n---\n\n<details>\n<summary>Deutsch</summary>\n\n'
+            section CHANGELOG.de.md "Änderungen siehe CHANGELOG.de.md."
+            printf '\n\n**Docker:** `docker pull ghcr.io/jamdevlab/gutkeeper:%s`\n\n' "$VERSION"
             printf '**Android:** `gutkeeper-%s.apk` herunterladen und installieren (Installation aus unbekannten Quellen erlauben). Prüfsummen in `SHA256SUMS.txt`.\n\n' "$VERSION"
-            printf '**Web ohne Server:** `gutkeeper-web-%s.zip` auf einen beliebigen Webserver (HTTPS) legen.\n' "$VERSION"
-          } >> notes.md
+            printf '**Web ohne Server:** `gutkeeper-web-%s.zip` auf einen beliebigen Webserver (HTTPS) legen.\n\n</details>\n' "$VERSION"
+          } > notes.md
           (cd out && sha256sum * > SHA256SUMS.txt)
           gh release create "$TAG" --title "GutKeeper $VERSION" --notes-file notes.md out/*

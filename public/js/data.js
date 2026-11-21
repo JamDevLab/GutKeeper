@@ -326,7 +326,7 @@ export function aboutCard() {
       actRow(t('Nach Updates suchen'), t('Fragt github.com nach der neuesten Version, nur beim Tippen'), checkGithub),
       ...('serviceWorker' in navigator && !inApk() ? [actRow(t('Web-App neu laden'), t('Holt geänderte Dateien vom eigenen Server'), checkUpdate)] : []),
       extRow(t('Fehler melden oder Idee vorschlagen'), t('GitHub-Issues'), REPO + '/issues/new/choose'),
-      extRow(t('Neuigkeiten'), t('Änderungen je Version'), REPO + '/blob/main/CHANGELOG.md'),
+      extRow(t('Neuigkeiten'), t('Änderungen je Version'), REPO + (isEn ? '/blob/main/CHANGELOG.md' : '/blob/main/CHANGELOG.de.md')),
       extRow(t('Quellcode'), 'github.com/JamDevLab/GutKeeper', REPO)),
     el('p', { class: 'bk-2' }, t('Hinweis: Dieses Tagebuch dient der eigenen Aufzeichnung und ersetzt keine ärztliche Beratung, Untersuchung oder Diagnose. Bei Blut im Stuhl, anhaltenden Beschwerden oder Unsicherheit wende dich bitte an eine Ärztin oder einen Arzt. Die Nutzung erfolgt auf eigene Verantwortung, es wird keine Haftung übernommen.')));
 }

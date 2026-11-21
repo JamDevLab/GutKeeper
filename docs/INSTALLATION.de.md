@@ -100,7 +100,7 @@ APK_KEYSTORE=~/gutkeeper-release.jks node tools/build-apk.js --release
 Das Skript baut die unsignierte Release-APK, richtet sie aus (`zipalign`), signiert sie (`apksigner`) und prüft die Signatur. Das Passwort fragt `apksigner` im Terminal ab. Für automatische Builds kannst du es stattdessen in den Umgebungsvariablen `APK_KEYSTORE_PASS` (und bei abweichendem Schlüssel-Passwort `APK_KEY_PASS`) übergeben; ein anderer Alias geht über `APK_KEY_ALIAS`. Die fertige Datei liegt unter `android-app/android/app/build/outputs/apk/release/gutkeeper-<Version>.apk`.
 
 ### Update veröffentlichen
-1. Version in `package.json` erhöhen (und im CHANGELOG eintragen).
+1. Version in `package.json` erhöhen (und in `CHANGELOG.md` und `CHANGELOG.de.md` eintragen).
 2. `node tools/build-apk.js --release` wie oben.
 3. Die APK z. B. als Datei an das GitHub-Release hängen.
 
