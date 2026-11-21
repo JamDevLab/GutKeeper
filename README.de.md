@@ -118,7 +118,7 @@ Alle Wege mit Anleitungen für Android und iPhone: [docs/INSTALLATION.de.md](doc
 - Nur Heimnetz oder VPN: der Server lehnt Anfragen von öffentlichen Adressen ab. Leite den Port nicht am Router weiter.
 - Anmeldung mit Passwort, dazu eine optionale PIN oder Fingerabdruck-Sperre, die nur für das jeweilige Gerät gilt.
 - Optionale Ende-zu-Ende-Verschlüsselung, dann liegen auf dem Server und in seinen Backups nur verschlüsselte Daten.
-- Keine Tracker, keine Fremd-Schriften oder -Skripte und keine externen Anfragen.
+- Keine Tracker und keine Fremd-Schriften oder -Skripte. Externe Anfragen stellt die App nur, wenn du „Nach Updates suchen“ antippst.
 
 Details: [Sicherheit und Datenschutz](docs/DATA.de.md#sicherheit-und-datenschutz) und [Verschlüsselung](docs/DATA.de.md#verschlüsselung).
 

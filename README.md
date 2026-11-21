@@ -118,7 +118,7 @@ All ways, with instructions for Android and iPhone: [docs/INSTALLATION.md](docs/
 - Home network or VPN only: the server rejects requests from public addresses. Do not forward the port on your router.
 - Password sign-in, plus an optional PIN or fingerprint lock that applies to one device only.
 - Optional end-to-end encryption, so the server and its backups only hold ciphertext.
-- No trackers, no third-party fonts or scripts and no external requests.
+- No trackers and no third-party fonts or scripts. The app makes no external requests, except when you tap "Check for updates".
 
 Details: [Security and privacy](docs/DATA.md#security-and-privacy) and [Encryption](docs/DATA.md#encryption).
 

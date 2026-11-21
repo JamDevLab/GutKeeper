@@ -27,7 +27,7 @@ Development: `npm run dev` starts the server with restart on changes and without
 
 ## Tests
 
-`npm test` runs all tests (`node:test`, no extra packages). A single test file: `node --disable-warning=ExperimentalWarning --test tests/e2ee.test.js`; a single test: add `--test-name-pattern="<part of name>"`. `npm test` lists the test files explicitly, so a new `tests/*.test.js` must be added to the `test` script in `package.json`, or it never runs.
+`npm test` runs all tests (`node:test`, no extra packages). To run one test file, use `node --disable-warning=ExperimentalWarning --test tests/e2ee.test.js`; for a single test, add `--test-name-pattern="<part of name>"`. `npm test` lists the test files explicitly, so a new `tests/*.test.js` must be added to the `test` script in `package.json`, or it never runs.
 
 ## Translations
 
