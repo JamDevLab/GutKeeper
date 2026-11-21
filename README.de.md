@@ -22,6 +22,8 @@ Ein quelloffenes **Stuhltagebuch** (Darmtagebuch) mit **Bristol-Stuhlskala**, um
 
 > **Hinweis:** GutKeeper dient der eigenen Aufzeichnung und ersetzt keine ärztliche Beratung, Untersuchung oder Diagnose. Bei Blut im Stuhl, anhaltenden Beschwerden oder Unsicherheit wende dich an eine Ärztin oder einen Arzt. Siehe [Haftungsausschluss](#haftungsausschluss-und-lizenz).
 
+> **Sprache:** Die Oberfläche gibt es auf Deutsch und Englisch. Umschalten unter *Optionen* → *App* → *Sprache / Language*; ohne Auswahl richtet sich die App nach der Sprache des Browsers.
+
 ## Funktionen
 
 - **Schnell erfassen** auf einer Seite, ohne Scrollen: Konsistenz (Bristol-Skala 1–7 oder „kein Stuhl“), Stuhldrang, Menge, Farbe, Schmerzen/Krämpfe, Blut, Schleim, Luft und optional eine Notiz. Auch ohne Stuhl lassen sich Drang, Schmerzen, Blut, Schleim und Luft angeben (nur Menge und Farbe entfallen). Datum und Uhrzeit sind immer auf „jetzt“ vorbelegt, die letzte Auswahl wird gemerkt. Eine Notiz lässt sich mit „Merken“ für die nächsten Einträge behalten (z. B. „Krank“).

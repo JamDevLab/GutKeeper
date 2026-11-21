@@ -1,30 +1,6 @@
-# Mitwirken / Contributing
+# Contributing / Mitwirken
 
-**Deutsch** · [English](#english)
-
-## Deutsch
-
-Danke, dass du mithelfen möchtest! Bitte öffne bei größeren Änderungen zuerst ein Issue, damit wir die Idee abstimmen können.
-
-### Entwicklung
-
-- Keine npm-Abhängigkeiten hinzufügen, Oberfläche ohne Build-Schritt (siehe [CLAUDE.md](CLAUDE.md) für die Architektur).
-- Node ≥ 22.13; vor dem Pull Request `npm test` ausführen.
-- Neue Oberflächentexte auf Deutsch im Code schreiben und in `public/js/lang-en.js` übersetzen.
-- Änderungen im `CHANGELOG.md` eintragen.
-
-### Beitragsvereinbarung (CLA)
-
-Mit dem Absenden eines Pull Requests (oder anderer Beiträge) erklärst du dich mit Folgendem einverstanden. Schreibe dazu in die Beschreibung des Pull Requests: **„Ich stimme der Beitragsvereinbarung in CONTRIBUTING.md zu.“**
-
-1. **Eigenes Werk:** Du hast den Beitrag selbst geschrieben oder hast das Recht, ihn einzureichen. Er enthält keinen fremden Code, dessen Lizenz dem widerspricht. Wenn du KI-Werkzeuge genutzt hast, hast du das Ergebnis geprüft und kennzeichnest das im Pull Request.
-2. **Lizenz an das Projekt:** Du räumst dem Projektinhaber (JamDevLab) ein weltweites, dauerhaftes, unwiderrufliches, unentgeltliches und einfaches Recht ein, deinen Beitrag zu nutzen, zu ändern, zu vervielfältigen, zu veröffentlichen und weiterzugeben, **auch unter anderen Lizenzbedingungen als der AGPL-3.0** (einschließlich Unterlizenzierung und einer Verwendung in Versionen mit anderer Lizenz).
-3. **Dein Urheberrecht bleibt bei dir.** Du darfst deinen Beitrag weiterhin selbst frei verwenden.
-4. **Öffentlich unter der AGPL:** Dein Beitrag wird zusammen mit dem Projekt unter der [AGPL-3.0](LICENSE) veröffentlicht.
-5. **Keine Gewähr:** Du stellst den Beitrag ohne Gewähr bereit. Aus der Annahme eines Beitrags entsteht kein Anspruch auf Vergütung oder Veröffentlichung.
-6. **Dein Arbeitgeber:** Wenn dein Arbeitgeber Rechte an deiner Arbeit haben könnte, hast du seine Erlaubnis.
-
-Beiträge ohne diese Zustimmung werden nicht übernommen.
+**English** · [Deutsch](#deutsch)
 
 ## English
 
@@ -49,3 +25,27 @@ By submitting a pull request (or any other contribution) you agree to the follow
 6. **Your employer:** If your employer might have rights to your work, you have their permission.
 
 Contributions without this agreement will not be merged.
+
+## Deutsch
+
+Danke, dass du mithelfen möchtest! Bitte öffne bei größeren Änderungen zuerst ein Issue, damit wir die Idee abstimmen können.
+
+### Entwicklung
+
+- Keine npm-Abhängigkeiten hinzufügen, Oberfläche ohne Build-Schritt (siehe [CLAUDE.md](CLAUDE.md) für die Architektur).
+- Node ≥ 22.13; vor dem Pull Request `npm test` ausführen.
+- Neue Oberflächentexte auf Deutsch im Code schreiben und in `public/js/lang-en.js` übersetzen.
+- Änderungen im `CHANGELOG.md` eintragen.
+
+### Beitragsvereinbarung (CLA)
+
+Mit dem Absenden eines Pull Requests (oder anderer Beiträge) erklärst du dich mit Folgendem einverstanden. Schreibe dazu in die Beschreibung des Pull Requests: **„Ich stimme der Beitragsvereinbarung in CONTRIBUTING.md zu.“**
+
+1. **Eigenes Werk:** Du hast den Beitrag selbst geschrieben oder hast das Recht, ihn einzureichen. Er enthält keinen fremden Code, dessen Lizenz dem widerspricht. Wenn du KI-Werkzeuge genutzt hast, hast du das Ergebnis geprüft und kennzeichnest das im Pull Request.
+2. **Lizenz an das Projekt:** Du räumst dem Projektinhaber (JamDevLab) ein weltweites, dauerhaftes, unwiderrufliches, unentgeltliches und einfaches Recht ein, deinen Beitrag zu nutzen, zu ändern, zu vervielfältigen, zu veröffentlichen und weiterzugeben, **auch unter anderen Lizenzbedingungen als der AGPL-3.0** (einschließlich Unterlizenzierung und einer Verwendung in Versionen mit anderer Lizenz).
+3. **Dein Urheberrecht bleibt bei dir.** Du darfst deinen Beitrag weiterhin selbst frei verwenden.
+4. **Öffentlich unter der AGPL:** Dein Beitrag wird zusammen mit dem Projekt unter der [AGPL-3.0](LICENSE) veröffentlicht.
+5. **Keine Gewähr:** Du stellst den Beitrag ohne Gewähr bereit. Aus der Annahme eines Beitrags entsteht kein Anspruch auf Vergütung oder Veröffentlichung.
+6. **Dein Arbeitgeber:** Wenn dein Arbeitgeber Rechte an deiner Arbeit haben könnte, hast du seine Erlaubnis.
+
+Beiträge ohne diese Zustimmung werden nicht übernommen.

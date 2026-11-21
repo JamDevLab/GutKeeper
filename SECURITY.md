@@ -1,8 +1,16 @@
 # Security Policy
 
-**Supported:** latest release only. **Report privately** via <https://github.com/JamDevLab/GutKeeper/security/advisories/new>, not in public issues. Include version, how you run it, impact and reproduction steps; no real health data. Best effort, reply within about 7 days.
+**Supported:** only the latest release ([Releases](https://github.com/JamDevLab/GutKeeper/releases)). Please update first.
 
-**Out of scope:** misconfiguration, the `NO_AUTH`/`ALLOW_ANY` test flags, the local app PIN (a UI lock only). See [Security and privacy](docs/DATA.md#security-and-privacy).
+**Reporting:** please **do not** open a public issue; report privately via <https://github.com/JamDevLab/GutKeeper/security/advisories/new> (Security → Report a vulnerability). Please include:
+
+- version and how you run it (Docker, `npm start`, web app without a server, APK)
+- description, impact and steps to reproduce
+- relevant settings (e.g. multiple accounts, reverse proxy, E2EE); no real health data
+
+Hobby project: I try to reply within about 7 days, with no guaranteed deadlines.
+
+**Out of scope:** your own misconfiguration (e.g. internet access without HTTPS), the test flags `NO_AUTH` and `ALLOW_ANY`, the local app PIN (only a lock for the interface, not a security boundary). Design overview: [Security and privacy](docs/DATA.md#security-and-privacy).
 
 ---
 
