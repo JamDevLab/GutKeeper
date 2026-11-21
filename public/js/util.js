@@ -1,5 +1,5 @@
 // Kleine Hilfsfunktionen: DOM, Speicher, Datum, Symbole
-import { LANG, LOC, t } from './i18n.js';
+import { LOC, t } from './i18n.js';
 import { pushBack } from './nav.js';
 import { DATA_KEYS, vault } from './vault.js';
 
@@ -118,19 +118,24 @@ export const nowTime = () => { const d = new Date(); return `${pad(d.getHours())
 export const parseD = (s) => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
 export const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
 export const diffDays = (a, b) => Math.round((parseD(b) - parseD(a)) / 86400000);
+// Datumsformate der eingestellten Sprache (de: 21.11.2026, en-GB: 21/11/2026); einmal angelegt, weil sie in Listen oft gebraucht werden
+const DF = {
+  dm: new Intl.DateTimeFormat(LOC, { day: '2-digit', month: '2-digit' }),
+  dmy: new Intl.DateTimeFormat(LOC, { day: '2-digit', month: '2-digit', year: 'numeric' }),
+  dmy2: new Intl.DateTimeFormat(LOC, { day: '2-digit', month: '2-digit', year: '2-digit' }),
+};
 export const fmtN = (n) => n.toLocaleString(LOC, { maximumFractionDigits: 1 });
 // year=true hängt das Jahr zweistellig an (für Zeiträume über einen Jahreswechsel)
 export const short = (ds, year = false) => {
-  const y = year ? ds.slice(2, 4) : '';
-  return LANG === 'en' ? `${ds.slice(8, 10)}/${ds.slice(5, 7)}${y && '/' + y}` : `${ds.slice(8, 10)}.${ds.slice(5, 7)}.${y}`;
+  return (year ? DF.dmy2 : DF.dm).format(parseD(ds));
 };
 export const uid = () => {
   if (crypto.randomUUID) return crypto.randomUUID();
   const b = crypto.getRandomValues(new Uint8Array(16));
   return Array.from(b, (x) => x.toString(16).padStart(2, '0')).join('');
 };
-export const fmtD = (ds) => (LANG === 'en' ? `${ds.slice(8, 10)}/${ds.slice(5, 7)}/${ds.slice(0, 4)}` : `${ds.slice(8, 10)}.${ds.slice(5, 7)}.${ds.slice(0, 4)}`);
-export const fmtD2 = (ds) => (LANG === 'en' ? `${ds.slice(8, 10)}/${ds.slice(5, 7)}/${ds.slice(2, 4)}` : `${ds.slice(8, 10)}.${ds.slice(5, 7)}.${ds.slice(2, 4)}`);
+export const fmtD = (ds) => DF.dmy.format(parseD(ds));
+export const fmtD2 = (ds) => DF.dmy2.format(parseD(ds));
 export const nF = (n) => (n === 1 ? t('1 Essens-Eintrag') : `${n.toLocaleString(LOC)} ${t('Essens-Einträge')}`);
 export const nE = (n) => (n === 1 ? t('1 Eintrag') : `${n.toLocaleString(LOC)} ${t('Einträge')}`);
 

@@ -5,6 +5,7 @@ import { checkPin, lockOn, removePin } from './applock.js';
 import { bioAutoTry, bioDisable, bioEnabled, bioUnlock } from './bio.js';
 import { apiFetch, serverConn, setServerToken } from './net.js';
 import { LANG, appName, setLang, t } from './i18n.js';
+import { LANGS } from './langs.js';
 import { resetNow } from './capture.js';
 import { S } from './state.js';
 import { sync } from './store.js';
@@ -99,10 +100,11 @@ export function unlock() {
   refreshViews(); refreshMe(); sync();
 }
 
-// Sprache schon vor dem Anmelden umschalten: zeigt die jeweils andere Sprache (in ihrer eigenen Schreibweise)
+// Sprache schon vor dem Anmelden umschalten: zeigt die nächste Sprache der Liste (in ihrer eigenen Schreibweise); bei zwei Sprachen die andere
 const langLink = () => {
-  const b = el('button', { type: 'button', class: 'lock-link', lang: LANG === 'en' ? 'de' : 'en' }, LANG === 'en' ? 'Deutsch' : 'English');
-  b.addEventListener('click', () => setLang(LANG === 'en' ? 'de' : 'en'));
+  const next = LANGS[(LANGS.findIndex((l) => l.code === LANG) + 1) % LANGS.length];
+  const b = el('button', { type: 'button', class: 'lock-link', lang: next.code }, next.name);
+  b.addEventListener('click', () => setLang(next.code));
   return b;
 };
 const textInput = (label, extra = {}) => el('input', { type: 'text', class: 'pin pw', 'aria-label': label, placeholder: label, autocapitalize: 'off', spellcheck: 'false', maxlength: 64, ...extra });

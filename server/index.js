@@ -14,6 +14,7 @@ const auth = require('./auth');
 const account = require('./account');
 const icons = require('./icons');
 const swcache = require('./swcache');
+const langs = require('./langs');
 const { storageInfo } = require('./storage');
 const { INSTANCE } = require('./instance');
 
@@ -34,15 +35,15 @@ const SECURITY_HEADERS = {
 const esc = (s) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const jsonStr = (s) => JSON.stringify(s).slice(1, -1);
 const nameFor = () => cfg.APP_NAME;
-const DESC = { de: 'Selbst gehostetes Darm-Tagebuch', en: 'Self-hosted bowel diary' };
-const langOf = (req) => (String(req.headers['accept-language'] || '').split(',')[0].trim().toLowerCase().startsWith('en') ? 'en' : 'de');
+const LANGS = langs.languages(cfg.PUBLIC_DIR);
+const langOf = (req) => langs.pick(req.headers['accept-language'], LANGS);
 const template = (file, escape, lang) => fs.readFileSync(path.join(cfg.PUBLIC_DIR, file), 'utf8')
   .replaceAll('__APP_NAME__', escape(nameFor())).replaceAll('__APP_SHORT__', escape(nameFor().slice(0, 16)))
-  .replaceAll('__LANG__', lang).replaceAll('__APP_DESC__', escape(DESC[lang]))
+  .replaceAll('__LANG__', lang).replaceAll('__APP_DESC__', escape(langs.translate(cfg.PUBLIC_DIR, lang, 'Selbst gehostetes Darm-Tagebuch')))
   .replaceAll('__THEME__', icons.theme).replaceAll('__ICON_192__', icons.u192).replaceAll('__ICON_512__', icons.u512)
   .replaceAll('__ICONS__', JSON.stringify(icons.icons));
 // Name und Sprache der installierten App richten sich nach der Browser-Sprache (Accept-Language)
-const TEMPLATES = Object.fromEntries(['de', 'en'].map((l) => [l, { '/index.html': template('index.html', esc, l), '/manifest.webmanifest': template('manifest.webmanifest', jsonStr, l) }]));
+const TEMPLATES = Object.fromEntries(LANGS.map((l) => [l, { '/index.html': template('index.html', esc, l), '/manifest.webmanifest': template('manifest.webmanifest', jsonStr, l) }]));
 
 // Textzellen, die mit = + - @ Tab oder CR beginnen, würden Tabellenprogramme als Formel auswerten: ein Apostroph davor entschärft sie
 // (Zahlen wie -3 bleiben unberührt). Der CSV-Import entfernt den Apostroph wieder.

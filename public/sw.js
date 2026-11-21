@@ -2,7 +2,7 @@
 const CACHE = 'gutkeeper-__CACHE_VERSION__'; // vom Server bzw. build-static.js gefüllt: App-Version plus Hash der Dateien (server/swcache.js)
 const SHELL = [
   './', 'index.html', 'style.css', 'manifest.webmanifest',
-  'js/app.js', 'js/i18n.js', 'js/lang-en.js', 'js/util.js', 'js/constants.js', 'js/state.js', 'js/auth.js', 'js/store.js', 'js/form.js', 'js/capture.js',
+  'js/app.js', 'js/i18n.js', 'js/langs.js', 'js/lang-en.js', 'js/util.js', 'js/constants.js', 'js/state.js', 'js/auth.js', 'js/store.js', 'js/form.js', 'js/capture.js',
   'js/filters.js', 'js/remote.js', 'js/history.js', 'js/stats.js', 'js/transfer.js', 'js/report.js', 'js/data.js', 'js/edit.js', 'js/food.js', 'js/detail.js', 'js/bio.js', 'js/admin.js', 'js/ui.js', 'js/cipher.js', 'js/vault.js', 'js/e2ee.js', 'js/e2ee-ui.js', 'js/pwa.js', 'js/pwa-early.js', 'js/net.js', 'js/nav.js', 'js/native.js', 'js/version.js', 'js/bkprefs.js', 'js/autobackup.js', 'js/applock.js', 'js/onboarding.js', 'js/account.js', 'js/notetags.js', 'js/importcheck.js', 'js/pdfcrypt.js', 'js/rewind.js',
 ];
 

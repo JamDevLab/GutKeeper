@@ -2,7 +2,7 @@
 // Bewusst zurückhaltend: keine Angaben zu Blut, Schleim, Schmerzen, Farbe, Essen oder Notizen und kein Name.
 import { CONS } from './constants.js';
 import { getRange } from './filters.js';
-import { LOC, appName, isEn, t } from './i18n.js';
+import { LOC, appName, clock12, t } from './i18n.js';
 import { needFor, ensureRemote } from './remote.js';
 import { S } from './state.js';
 import { viewEntries } from './store.js';
@@ -176,7 +176,7 @@ function draw(s, key, from, to, design = 'overview') {
     }
     for (const h of [0, 6, 12, 18]) {
       const a = (h / 24) * Math.PI * 2 - Math.PI / 2;
-      txt(isEn ? `${h % 12 || 12} ${h < 12 ? 'am' : 'pm'}` : String(h), cx + Math.cos(a) * 70, cy + Math.sin(a) * 70 + 10, F(700, 28), T.dim, 'center');
+      txt(clock12 ? `${h % 12 || 12} ${h < 12 ? 'am' : 'pm'}` : String(h), cx + Math.cos(a) * 70, cy + Math.sin(a) * 70 + 10, F(700, 28), T.dim, 'center');
     }
     const wdTop = s.n ? s.wd.indexOf(Math.max(...s.wd)) : -1;
     foot(wdTop < 0 ? none() : t('Meist am {d}', { d: addDays(new Date(2024, 0, 1), wdTop).toLocaleDateString(LOC, { weekday: 'long' }) }));

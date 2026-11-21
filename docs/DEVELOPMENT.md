@@ -11,7 +11,7 @@ server/         Node server (config, db, auth, sync, backups, storage, icons, cr
 server/cli.js   Server administration (accounts, password, sign out sessions, decrypt)
 public/         User interface (index.html, style.css, sw.js, manifest)
 public/js/      ES modules without a bundler (entry point app.js; storage and sync in store.js, encryption
-                in cipher/vault/e2ee, options in data.js, English texts in lang-en.js)
+                in cipher/vault/e2ee, options in data.js, languages in langs.js, English texts in lang-en.js)
 public/icons/   Built-in app icons (eight sets: bristol, ring, guard, crest, classic, shield, list, diary)
 android-app/    Capacitor project for the Android app (APK)
 compose/        Docker Compose templates (quick start, multiple accounts, reverse proxy)
@@ -32,6 +32,18 @@ Development: `npm run dev` starts the server with restart on changes and without
 ## Translations
 
 UI strings are written in German directly in the code and wrapped in `t('…')`. The English text for each string is in `public/js/lang-en.js`. When you add or change a UI string, add or update the matching key there. `tests/consistency.test.js` checks that every `t('…')` string has an English entry.
+
+German and English are built in. Each further language is one file with a translation table. English is the fallback, so a language can be added before every string is translated.
+
+### Adding a language
+
+1. Copy `public/js/lang-en.js` to `public/js/lang-<code>.js`, using the two-letter ISO 639-1 code (e.g. `lang-fr.js`). Keep the format: `export const T = {`, then one `"German text": "translation",` per line. Placeholders such as `{n}` stay as they are.
+2. Translate the values. Leave the keys (the German text) unchanged. Delete lines you have not translated yet; those strings then appear in English.
+3. Add the language to `public/js/langs.js`: `{ code: 'fr', name: 'Français', locale: 'fr-FR' }` (`name` in the language itself, `locale` for dates and numbers; `clock12: true` for am/pm times in the recap).
+4. Add `'js/lang-<code>.js'` to `SHELL` in `public/sw.js`, so the app works offline in that language.
+5. Run `npm test`. It checks the file format, the placeholders and that `langs.js` and the files match.
+
+The server and the static build find the new file on their own: the browser language (`Accept-Language`) picks it, and `APP_LANG=<code>` makes it the default in the serverless version. CSV files and file names stay German or English, because the CSV import reads those two.
 
 ## Helper scripts (`tools/`)
 

@@ -22,10 +22,10 @@ const ALIAS = { 1: 'classic', 2: 'diary', 3: 'bristol', 4: 'list', 5: 'shield', 
 const iconName = String(ALIAS[process.env.APP_ICON] || process.env.APP_ICON || 'bristol').trim().toLowerCase();
 if (iconName !== 'custom' && !VARIANTS[iconName]) fail(`Unbekanntes APP_ICON „${iconName}“ (erlaubt: ${Object.keys(VARIANTS).join(', ')}, custom)`);
 
-const lang = ['de', 'en'].includes(process.env.APP_LANG) ? process.env.APP_LANG : '';
+const langs = require('../server/langs');
+const lang = langs.languages(src).includes(process.env.APP_LANG) ? process.env.APP_LANG : '';
 const customName = (process.env.APP_NAME || '').trim();
 const name = customName || 'GutKeeper';
-const DESC = { de: 'Selbst gehostetes Darm-Tagebuch', en: 'Self-hosted bowel diary' };
 const theme = /^#[0-9a-f]{6}$/i.test((process.env.APP_THEME_COLOR || '').trim()) ? process.env.APP_THEME_COLOR.trim()
   : (VARIANTS[iconName] || VARIANTS.bristol);
 
@@ -69,7 +69,7 @@ if (iconName === 'custom') {
 
 const L = lang || 'de';
 const fill = (text, escape) => text.replaceAll('__APP_NAME__', escape(name)).replaceAll('__APP_SHORT__', escape(name.slice(0, 16)))
-  .replaceAll('__LANG__', L).replaceAll('__APP_DESC__', escape(DESC[L]))
+  .replaceAll('__LANG__', L).replaceAll('__APP_DESC__', escape(langs.translate(src, L, 'Selbst gehostetes Darm-Tagebuch')))
   .replaceAll('__THEME__', theme).replaceAll('__ICON_192__', `${dir}/icon-192.png`).replaceAll('__ICON_512__', `${dir}/icon-512.png`)
   .replaceAll('__ICONS__', JSON.stringify(icons));
 

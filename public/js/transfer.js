@@ -1,7 +1,7 @@
 // Export und Import (JSON, CSV)
 import { askSheet } from './admin.js';
 import { iterOk, wrapText } from './cipher.js';
-import { LOC, fileBase, isEn, t } from './i18n.js';
+import { LOC, fileBase, isDe, t } from './i18n.js';
 import { COLORS, mealLabel } from './constants.js';
 import { apiFetch, serverConn } from './net.js';
 import { S } from './state.js';
@@ -10,7 +10,7 @@ import { DEV, LS, el, fmtD, nE, nF, openOverlay, pad, stampStr, todayStr, uid } 
 import { cleanOrigin, fileKind, originRelation, planImport } from './importcheck.js';
 
 // Kopfzeile und Wörter der CSV-Ausgabe folgen der Sprache; beim Import werden beide Sprachen verstanden
-export const CSV_HEAD = isEn ? 'date;time;consistency;urge;amount;blood;pain;mucus;gas;color;note' : 'datum;uhrzeit;konsistenz;stuhldrang;menge;blut;schmerz;schleim;luft;farbe;notiz';
+export const CSV_HEAD = isDe ? 'datum;uhrzeit;konsistenz;stuhldrang;menge;blut;schmerz;schleim;luft;farbe;notiz' : 'date;time;consistency;urge;amount;blood;pain;mucus;gas;color;note';
 // Textzellen mit = + - @ Tab oder CR am Anfang würden Tabellenprogramme als Formel auswerten: Apostroph davor (Zahlen wie -3 bleiben). Der Import entfernt ihn wieder.
 export const csvQ = (x) => {
   x = x == null ? '' : String(x);
@@ -81,7 +81,7 @@ export async function exportJsonEncrypted(password, list) {
   return backupMsg(data, '{n} verschlüsselt gesichert.');
 }
 export function exportCsv(list) {
-  const YES = isEn ? 'yes' : 'ja', NO = isEn ? 'no' : 'nein';
+  const YES = isDe ? 'ja' : 'yes', NO = isDe ? 'nein' : 'no';
   const rows = (list || sorted()).map((e) => [e.date, e.time, e.consistency || '', e.urge || 0, e.amount || '', e.blood ? YES : NO, e.pain || 0, e.mucus ? YES : NO, e.luft ? YES : NO, e.color ? COLORS[e.color - 1].label.toLowerCase() : '', csvQ(e.note)].join(';'));
   download(`${fileBase()}-export-${stampStr()}.csv`, '\ufeff' + CSV_HEAD + '\n' + rows.join('\n') + '\n', 'text/csv');
   LS.set('lastBackup', Date.now());
@@ -91,9 +91,9 @@ export function exportCsv(list) {
 // Essen als eigene CSV-Datei: Datum; Uhrzeit; Mahlzeit; Essen (Mahlzeit im Klartext der eingestellten Sprache)
 export function exportFoodCsv() {
   const list = activeFoods().sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
-  const head = isEn ? 'date;time;meal;food' : 'datum;uhrzeit;mahlzeit;essen';
+  const head = isDe ? 'datum;uhrzeit;mahlzeit;essen' : 'date;time;meal;food';
   const rows = list.map((f) => [f.date, f.time, f.meal ? mealLabel(f.meal) : '', csvQ(f.text)].join(';'));
-  download(`${fileBase()}-${isEn ? 'food' : 'essen'}-${stampStr()}.csv`, '\ufeff' + head + '\n' + rows.join('\n') + '\n', 'text/csv');
+  download(`${fileBase()}-${isDe ? 'essen' : 'food'}-${stampStr()}.csv`, '\ufeff' + head + '\n' + rows.join('\n') + '\n', 'text/csv');
   LS.set('lastBackup', Date.now());
   return t('{n} als CSV exportiert.', { n: nF(rows.length) });
 }

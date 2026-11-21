@@ -12,6 +12,7 @@ import { remindDays, setRemindDays } from './bkprefs.js';
 import { enableFlow } from './e2ee-ui.js';
 import { supported as e2eeSupported } from './e2ee.js';
 import { LANG, langChosen, setLang, t } from './i18n.js';
+import { LANGS } from './langs.js';
 import { onboardingBaked } from './net.js';
 import { S } from './state.js';
 import { activeFoods, setFoodEnabled } from './store.js';
@@ -65,11 +66,11 @@ const STEPS = [
     lang: true,
     applies: () => !langChosen || resumeLang,
     title: () => 'Sprache / Language',
-    value: () => (LANG === 'en' ? 'English' : 'Deutsch'),
+    value: () => LANGS.find((l) => l.code === LANG).name,
     where: () => t('App'),
     render(box) {
       let want = LANG;
-      box.append(chips([['de', 'Deutsch'], ['en', 'English']], () => want, (v) => {
+      box.append(chips(LANGS.map((l) => [l.code, l.name]), () => want, (v) => {
         want = v; // Auswahl sofort zeigen, nicht erst nach dem Neuladen
         try { sessionStorage.setItem(RESUME, '1'); } catch { /* ohne Merker beginnt der Einstieg nach dem Neuladen beim nächsten Schritt */ }
         document.documentElement.classList.add('reloading');

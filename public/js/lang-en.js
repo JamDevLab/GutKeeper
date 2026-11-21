@@ -1,5 +1,7 @@
 // Englische Übersetzungen. Schlüssel = deutscher Text aus dem Code, Platzhalter wie {n} bleiben erhalten.
-export const EN = {
+// Englisch ist die Vorlage für weitere Sprachen und der Ersatz, wenn dort ein Text fehlt (siehe docs/DEVELOPMENT.md, "Adding a language").
+export const T = {
+  "Selbst gehostetes Darm-Tagebuch": "Self-hosted bowel diary",
   "Heute": "Today",
   "Gestern": "Yesterday",
   "1 Eintrag": "1 entry",
@@ -68,7 +70,6 @@ export const EN = {
   "Löschen": "Delete",
   "Fertig": "Done",
   "Abbrechen": "Cancel",
-  "Geändert": "Updated",
   "Eintrag bearbeiten": "Edit entry",
   "7 Tage": "7 days",
   "30 Tage": "30 days",
@@ -614,7 +615,6 @@ export const EN = {
   "Ungültige Datei: Die Zahl der Schlüsselableitungs-Runden liegt außerhalb des erlaubten Bereichs.": "Invalid file: the number of key derivation rounds is outside the allowed range.",
   "Falsches Passwort oder beschädigte Datei. Bitte noch einmal versuchen.": "Incorrect password or damaged file. Try again.",
   "Welches Konto importieren?": "Which account do you want to import?",
-  "Beim Import": "On import",
   "Zusammenführen": "Merge",
   "Als neue Einträge (neue IDs)": "As new entries (new IDs)",
   "Neue IDs: Nichts wird überschrieben, alles kommt als neue Einträge dazu (gleiche Einträge zur selben Zeit werden übersprungen).": "New IDs: nothing is overwritten and everything is added as new entries. Identical entries with the same timestamp are skipped.",

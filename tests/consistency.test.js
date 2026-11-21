@@ -12,18 +12,16 @@ const DIR = path.join(__dirname, '..', 'public', 'js');
 const files = fs.readdirSync(DIR).filter((f) => f.endsWith('.js'));
 const read = (f) => fs.readFileSync(path.join(DIR, f), 'utf8');
 
-// Schlüssel und Werte von lang-en.js ("Deutsch": "English",)
-function enMap() {
-  const map = new Map();
-  for (const m of read('lang-en.js').matchAll(/^\s*"((?:[^"\\]|\\.)*)":\s*"((?:[^"\\]|\\.)*)",?\s*$/gm)) map.set(JSON.parse('"' + m[1] + '"'), JSON.parse('"' + m[2] + '"'));
-  return map;
-}
+// Schlüssel und Werte einer Sprachdatei ("Deutsch": "Übersetzung",), wie server/langs.js sie liest
+const isLang = (f) => /^lang-[a-z]{2,3}\.js$/.test(f);
+const langMap = (f) => require('../server/langs').strings(path.join(DIR, '..'), f.slice(5, -3));
+const enMap = () => langMap('lang-en.js');
 
 test('Jeder Text in t(\'…\') hat eine englische Übersetzung', () => {
   const en = enMap();
   const missing = [];
   for (const f of files) {
-    if (f === 'lang-en.js') continue;
+    if (isLang(f)) continue;
     for (const m of read(f).matchAll(/\bt\('((?:[^'\\]|\\.)*)'/g)) {
       const key = m[1].replace(/\\'/g, "'");
       if (!en.has(key)) missing.push(`${f}: ${key.slice(0, 80)}`);
@@ -32,14 +30,31 @@ test('Jeder Text in t(\'…\') hat eine englische Übersetzung', () => {
   assert.deepEqual(missing, [], 'fehlende Einträge in public/js/lang-en.js');
 });
 
-test('Übersetzungen: nicht leer, Platzhalter {x} stimmen überein', () => {
+test('Übersetzungen: nicht leer, Platzhalter {x} stimmen überein, jede Zeile lesbar (alle Sprachdateien)', () => {
   const bad = [];
-  for (const [de, en] of enMap()) {
-    const ph = (s) => (s.match(/\{\w+\}/g) || []).sort().join(',');
-    if (!en.trim()) bad.push(`leer: ${de.slice(0, 60)}`);
-    else if (ph(de) !== ph(en)) bad.push(`Platzhalter: ${de.slice(0, 60)}`);
+  for (const f of files.filter(isLang)) {
+    const map = langMap(f);
+    const lines = read(f).split('\n').filter((l) => /^\s*"/.test(l));
+    if (lines.length !== map.size) bad.push(`${f}: ${lines.length - map.size} Zeile(n) doppelt oder nicht im Format "Deutsch": "Übersetzung", (eine je Zeile)`);
+    if (!/^export const T = \{$/m.test(read(f))) bad.push(`${f}: erwartet \`export const T = {\``);
+    for (const [de, tr] of map) {
+      const ph = (s) => (s.match(/\{\w+\}/g) || []).sort().join(',');
+      if (!tr.trim()) bad.push(`${f}: leer: ${de.slice(0, 60)}`);
+      else if (ph(de) !== ph(tr)) bad.push(`${f}: Platzhalter: ${de.slice(0, 60)}`);
+    }
   }
   assert.deepEqual(bad, []);
+});
+
+test('Sprachliste (langs.js) und Sprachdateien passen zusammen', async () => {
+  const { LANGS } = await import('data:text/javascript,' + encodeURIComponent(read('langs.js')));
+  const codes = LANGS.map((l) => l.code);
+  assert.equal(codes[0], 'de', 'Deutsch (Sprache im Code) steht zuerst');
+  assert.deepEqual([...codes].sort(), require('../server/langs').languages(path.join(DIR, '..')).sort(), 'jede Sprache in langs.js braucht lang-<code>.js und umgekehrt');
+  for (const l of LANGS) {
+    assert.ok(l.name && l.locale, `${l.code}: name und locale fehlen`);
+    assert.doesNotThrow(() => new Intl.DateTimeFormat(l.locale), `${l.code}: ungültige locale`);
+  }
 });
 
 test('Service Worker: alle Client-Dateien stehen in der Liste, und jede Datei der Liste existiert', () => {
@@ -69,7 +84,7 @@ test('Kein Offline-Prüfwert (verifier) und keine PIN/PASSWORD-Variablen mehr in
   const hits = [];
   const dirs = [[path.join(__dirname, '..', 'server'), /\bverifier(For)?\b|process\.env\.(PIN|PASSWORD|PIN_REMEMBER)\b|env\.(PIN|PASSWORD)\b/], [DIR, /\bverifier\b|derive\(/]];
   for (const [dir, re] of dirs) {
-    for (const f of fs.readdirSync(dir).filter((x) => x.endsWith('.js') && x !== 'lang-en.js')) {
+    for (const f of fs.readdirSync(dir).filter((x) => x.endsWith('.js') && !isLang(x))) {
       if (re.test(fs.readFileSync(path.join(dir, f), 'utf8'))) hits.push(f);
     }
   }
@@ -91,4 +106,17 @@ test('Serverlose Version: der Marker (Meta-Tag) für den geführten Einstieg ist
   assert.ok(!off.html.includes('gutkeeper-onboarding'));
   assert.ok(on.files && off.files, 'das Modul ist in beiden Versionen enthalten');
   assert.ok(read('net.js').includes('meta[name="gutkeeper-onboarding"]'), 'die App liest denselben Meta-Tag');
+});
+
+test('Sprachwahl nach Accept-Language: erste vorhandene Sprache, q-Werte, sonst Englisch', () => {
+  const { pick } = require('../server/langs');
+  const codes = ['de', 'en', 'fr'];
+  assert.equal(pick('de-AT,de;q=0.9,en;q=0.8', codes), 'de');
+  assert.equal(pick('en-US,en;q=0.9', codes), 'en');
+  assert.equal(pick('nl-NL,fr;q=0.7,de;q=0.9', codes), 'de', 'höchster q-Wert zuerst');
+  assert.equal(pick('fr-CH', codes), 'fr');
+  assert.equal(pick('nl,pl;q=0.5', codes), 'en', 'keine passende Sprache: Englisch');
+  assert.equal(pick('de;q=0', codes), 'en', 'q=0 heißt „nicht gewünscht“');
+  assert.equal(pick('', codes), 'en');
+  assert.equal(pick(undefined, ['de', 'en']), 'en');
 });

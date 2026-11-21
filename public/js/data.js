@@ -1,5 +1,6 @@
 // Ansicht „Daten“: Sichern, Bericht, Backups, Sicherheit
-import { LANG, LOC, appName, fileBase, isEn, setLang, t } from './i18n.js';
+import { LANG, LOC, appName, fileBase, isDe, setLang, t } from './i18n.js';
+import { LANGS } from './langs.js';
 import { handleUnauthorized, showLock } from './auth.js';
 import { getRange } from './filters.js';
 import { loadRemote, needFor, remoteStatus } from './remote.js';
@@ -124,8 +125,8 @@ export function reportCard() {
     }
     const mode = repMode();
     const { blob, count } = await buildReport(a, b, mode, opts);
-    const modeName = { short: isEn ? 'short' : 'kurz', normal: 'normal', full: isEn ? 'detailed' : 'ausfuehrlich' }[mode];
-    download(`${fileBase()}-${isEn ? 'report' : 'bericht'}-${modeName}-${a}_${b}-${stampStr()}.pdf`, blob, 'application/pdf');
+    const modeName = { short: isDe ? 'kurz' : 'short', normal: 'normal', full: isDe ? 'ausfuehrlich' : 'detailed' }[mode];
+    download(`${fileBase()}-${isDe ? 'bericht' : 'report'}-${modeName}-${a}_${b}-${stampStr()}.pdf`, blob, 'application/pdf');
     S.dataMsg = (count ? (count === 1 ? t('PDF mit 1 Eintrag erstellt.') : t('PDF mit {n} Einträgen erstellt.', { n: count.toLocaleString(LOC) })) : t('PDF erstellt (keine Einträge im Zeitraum).'))
       + (missing ? ' ' + t('Ältere Einträge konnten nicht vom Server geladen werden, der Bericht enthält nur lokale Einträge.') : '');
     renderData();
@@ -326,7 +327,7 @@ export function aboutCard() {
       actRow(t('Nach Updates suchen'), t('Fragt github.com nach der neuesten Version, nur beim Tippen'), checkGithub),
       ...('serviceWorker' in navigator && !inApk() ? [actRow(t('Web-App neu laden'), t('Holt geänderte Dateien vom eigenen Server'), checkUpdate)] : []),
       extRow(t('Fehler melden oder Idee vorschlagen'), t('GitHub-Issues'), REPO + '/issues/new/choose'),
-      extRow(t('Neuigkeiten'), t('Änderungen je Version'), REPO + (isEn ? '/blob/main/CHANGELOG.md' : '/blob/main/CHANGELOG.de.md')),
+      extRow(t('Neuigkeiten'), t('Änderungen je Version'), REPO + (isDe ? '/blob/main/CHANGELOG.de.md' : '/blob/main/CHANGELOG.md')),
       extRow(t('Quellcode'), 'github.com/JamDevLab/GutKeeper', REPO)),
     el('p', { class: 'bk-2' }, t('Hinweis: Dieses Tagebuch dient der eigenen Aufzeichnung und ersetzt keine ärztliche Beratung, Untersuchung oder Diagnose. Bei Blut im Stuhl, anhaltenden Beschwerden oder Unsicherheit wende dich bitte an eine Ärztin oder einen Arzt. Die Nutzung erfolgt auf eigene Verantwortung, es wird keine Haftung übernommen.')));
 }
@@ -423,7 +424,7 @@ export function appCard() {
   const theme = DEV.get('theme', null) || null;
   return el('div', { class: 'dcard' }, el('h3', {}, t('App')),
     row(t('Darstellung'), chips([[null, t('Automatisch')], ['light', t('Hell')], ['dark', t('Dunkel')]], (v) => theme === v, (v) => { DEV.set('theme', v); applyTheme(v); renderData(); })),
-    row('Sprache / Language', chips([['de', 'Deutsch'], ['en', 'English']], (v) => LANG === v, (v) => { if (LANG !== v) setLang(v); })),
+    row('Sprache / Language', chips(LANGS.map((l) => [l.code, l.name]), (v) => LANG === v, (v) => { if (LANG !== v) setLang(v); })),
     row(t('Stuhldrang im Verlauf farbig'), chips([[true, t('An')], [false, t('Aus')]], (v) => DEV.get('urgeColor', true) === v, (v) => { DEV.set('urgeColor', v); applyUrgeColor(); renderData(); }),
       t('Der Stuhldrang in der Verlaufsliste wird gelb, orange oder rot hervorgehoben.')),
     row(t('Beim Öffnen mit „Erfassen“ starten'), chips([[true, t('An')], [false, t('Aus')]], (v) => DEV.get('homeOnOpen', true) === v, (v) => { DEV.set('homeOnOpen', v); renderData(); }),

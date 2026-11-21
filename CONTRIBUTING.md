@@ -11,6 +11,7 @@ Thanks for helping out! For larger changes, please open an issue first so we can
 - Do not add npm dependencies; the UI has no build step (see [CLAUDE.md](CLAUDE.md) for the architecture).
 - Node ≥ 22.13; run `npm test` before opening a pull request.
 - Write new UI strings in German in the code and translate them in `public/js/lang-en.js`.
+- New languages are welcome: see [Adding a language](docs/DEVELOPMENT.md#adding-a-language).
 - Add changes to `CHANGELOG.md` (English) and `CHANGELOG.de.md` (German).
 
 ### Contributor license agreement (CLA)
@@ -35,6 +36,7 @@ Danke, dass du mithelfen möchtest! Bitte öffne bei größeren Änderungen zuer
 - Keine npm-Abhängigkeiten hinzufügen, Oberfläche ohne Build-Schritt (siehe [CLAUDE.md](CLAUDE.md) für die Architektur).
 - Node ≥ 22.13; vor dem Pull Request `npm test` ausführen.
 - Neue Oberflächentexte auf Deutsch im Code schreiben und in `public/js/lang-en.js` übersetzen.
+- Neue Sprachen sind willkommen: siehe [Eine Sprache hinzufügen](docs/DEVELOPMENT.de.md#eine-sprache-hinzufügen).
 - Änderungen in `CHANGELOG.md` (Englisch) und `CHANGELOG.de.md` (Deutsch) eintragen.
 
 ### Beitragsvereinbarung (CLA)
