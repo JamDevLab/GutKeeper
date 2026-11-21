@@ -61,6 +61,7 @@ npm run build:static      # serverless build into dist/ (env: APP_LANG, APP_ICON
 - `tools/build-apk.js [app folder, default android-app] [--release]` builds the serverless version, copies it into the Capacitor project, syncs and runs Gradle (JAVA_HOME = JDK 21, ANDROID_HOME). Version name/code come from `package.json`. `--release` signs with zipalign + apksigner using `APK_KEYSTORE` (outside the repo) and optional `APK_KEYSTORE_PASS`/`APK_KEY_PASS`/`APK_KEY_ALIAS` env vars; never put keys or passwords in files.
 - `tools/android-style.js <app folder>` puts the project's icons and a plain splash screen into a Capacitor Android project.
 - `tools/build-static.js` copies `public/` to `dist/`, fills the templates and picks the icon set. `tools/make-icons.js [set …]` generates the eight built-in icon sets (SVG motifs with named geometry constants, rendered with local Chrome/Edge; run with `TMPDIR=~/workspace/.t`).
+- New versions: bump `package.json` (and `android-app/package.json`), add `## X.Y.Z` to both changelogs, run `npm test`, commit "Release X.Y.Z", tag `vX.Y.Z` (annotated); pushing the tag runs the release workflow. The maintainer keeps a local skill `.claude/skills/release` (not in git) with the full checklist.
 - Record user-visible changes in both `CHANGELOG.md` (English) and `CHANGELOG.de.md` (German), same `## <version>` headings; the release workflow puts both into the release notes, English first. The version lives in `package.json`.
 
 ## Design guidelines
