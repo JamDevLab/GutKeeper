@@ -22,6 +22,7 @@ function backupDir() {
 const BACKUP_DIR = backupDir();
 const DB_PATH = path.join(DATA_DIR, 'gutkeeper.db');
 const db = new DatabaseSync(DB_PATH);
+db.exec('PRAGMA busy_timeout = 5000;'); // kurz warten statt sofort „database is locked“ (z. B. wenn beim Neustart der alte Prozess die Datei noch hält)
 db.exec('PRAGMA journal_mode = WAL;');
 const newEpoch = () => crypto.randomBytes(8).toString('hex');
 // blob = verschlüsselter Inhalt bei aktiver Ende-zu-Ende-Verschlüsselung (sonst leer); die übrigen Felder sind dann neutral

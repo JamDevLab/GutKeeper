@@ -27,7 +27,7 @@ function start({ AUTH, ...env } = {}, dir = fs.mkdtempSync(path.join(os.tmpdir()
     let out = '';
     const onData = (d) => {
       out += d; if (process.env.DEBUG_SERVER) process.stderr.write('[server] ' + d);
-      if (out.includes('läuft auf Port')) resolve({ base: `http://127.0.0.1:${port}`, proc: p, dir, log: () => out, token: (out.match(/Einmal-Code für die Einrichtung: (\w+)/) || [])[1], stop: () => p.kill() });
+      if (out.includes('läuft auf Port')) resolve({ base: `http://127.0.0.1:${port}`, proc: p, dir, log: () => out, token: (out.match(/Einmal-Code für die Einrichtung: (\w+)/) || [])[1], stop: () => new Promise((r) => { if (p.exitCode !== null || p.signalCode) return r(); p.once('exit', () => r()); p.kill(); }) }); // wartet, bis der Prozess die Datenbank freigegeben hat
     };
     p.stdout.on('data', onData); p.stderr.on('data', onData);
     p.on('exit', (c) => reject(new Error('Server beendet: ' + c + '\n' + out)));
@@ -168,7 +168,7 @@ test('Mehrbenutzer: Einrichten, Konten, strikte Trennung der Daten', async () =>
   assert.equal((await admin.get('/api/admin/users')).json.users.length, 1);
   const db = new DatabaseSync(path.join(s.dir, 'gutkeeper.db'), { readOnly: true });
   assert.equal(db.prepare('SELECT COUNT(*) c FROM entries WHERE user_id <> 1').get().c, 0, 'keine Reste von Bob');
-  db.close(); s.stop();
+  db.close(); await s.stop();
 });
 
 // ---------------------------------------------------------------------------------------------
@@ -217,7 +217,7 @@ test('Gesamt-Export, Backups und Wiederherstellen pro Konto (mit und ohne Passwo
   await admin.post('/api/admin/users', { name: 'neu', password: PW });
   const neuId = (await admin.get('/api/admin/users')).json.users.find((u) => u.name === 'neu').id;
   assert.equal((await admin.post('/api/restore', { name, user: neuId })).json.error, 'no-data');
-  s.stop();
+  await s.stop();
 });
 
 // ---------------------------------------------------------------------------------------------
@@ -231,7 +231,7 @@ test('ADMIN_FULL_ACCESS=0: Admin verwaltet nur Konten, kein Zugriff auf Backups 
     assert.equal((await admin[m](u, {})).status, 403, `${u} gesperrt`);
   }
   assert.equal((await admin.get('/api/storage')).json.db, undefined, 'keine Server-Größen');
-  s.stop();
+  await s.stop();
 });
 
 // ---------------------------------------------------------------------------------------------
@@ -248,12 +248,12 @@ test('NO_AUTH=1: Einzelnutzer-Betrieb ohne Anmeldung (nur für lokale Tests)', a
   assert.equal((await c.post('/api/logout-others', {})).json.error, 'no-lock', 'ohne Anmeldung keine Sitzungen');
   assert.equal((await c.post('/api/account/password', { current: 'x', next: PW })).json.error, 'no-lock');
   assert.match(open.log(), /NO_AUTH/);
-  open.stop();
+  await open.stop();
   // bei MULTIUSER=1 gilt NO_AUTH nicht
   const multi = await start({ MULTIUSER: '1', NO_AUTH: '1' });
   assert.equal((await client(multi.base).get('/api/me')).status, 401);
   assert.equal((await client(multi.base).get('/api/config')).json.auth, 'password');
-  multi.stop();
+  await multi.stop();
 });
 
 test('Einzelnutzer: Einrichtung nur mit Einmal-Code, nur einmal, danach Anmeldung mit Passwort', async () => {
@@ -293,12 +293,12 @@ test('Einzelnutzer: Einrichtung nur mit Einmal-Code, nur einmal, danach Anmeldun
   const stored = db.prepare('SELECT pass FROM users WHERE id = 1').get().pass; db.close();
   assert.match(stored, /^scrypt\$/); assert.ok(!stored.includes(PW));
   // nach einem Neustart ist nichts mehr einzurichten und die Sitzung bleibt gültig
-  s.stop();
+  await s.stop();
   const s2 = await start({ AUTH: '1' }, s.dir);
   assert.equal(s2.token, undefined, 'kein neuer Einmal-Code'); assert.doesNotMatch(s2.log(), /Einmal-Code/);
   const c2 = client(s2.base); c2.setCookie(c.cookie());
   assert.equal((await c2.get('/api/me')).status, 200);
-  s2.stop();
+  await s2.stop();
 });
 
 test('Einzelnutzer: Fehlversuche sperren global (auch bei wechselnden Adressen) und je Adresse', async () => {
@@ -312,13 +312,13 @@ test('Einzelnutzer: Fehlversuche sperren global (auch bei wechselnden Adressen) 
   assert.equal(r.status, 429); assert.equal(r.json.error, 'locked');
   assert.equal((await from('10.0.0.100', PW)).status, 429, 'auch das richtige Passwort ist gesperrt');
   assert.equal((await c.get('/api/me')).status, 200, 'angemeldete Geräte bleiben unberührt');
-  s.stop();
+  await s.stop();
   // Einrichtung: falscher Code wird ebenfalls gebremst
   const s2 = await start({ AUTH: '1' });
   const d = client(s2.base);
   for (let i = 0; i < 5; i++) assert.equal((await d.post('/api/setup', { secret: 'x' + i, password: PW })).status, 401);
   assert.equal((await d.post('/api/setup', { secret: s2.token, password: PW })).status, 429, 'auch der richtige Code wartet');
-  s2.stop();
+  await s2.stop();
 });
 
 // Ein Sitzungs-Token mit frei wählbarem Ablauf (SESSION_SECRET ist im Test bekannt): Konto.Version.Ablauf.Signatur
@@ -371,7 +371,7 @@ test('Gleitende Sitzung: ein altes Token wird erneuert, ein frisches nicht, ein 
   assert.equal((await rawMe(s.base, { Cookie: `gutkeeper_session=${forge(SECRET, cookie, -1000)}` })).status, 401);
   // Antworten ohne Anmeldung setzen kein Cookie
   assert.equal((await rawMe(s.base, {})).headers.get('set-cookie'), null);
-  s.stop();
+  await s.stop();
 });
 
 test('Einzelnutzer: Passwort ändern und „Andere Geräte abmelden“ beenden die Sitzungen der anderen Geräte', async () => {
@@ -398,7 +398,7 @@ test('Einzelnutzer: Passwort ändern und „Andere Geräte abmelden“ beenden d
   assert.equal((await b.get('/api/me')).status, 401, 'andere Sitzung endet');
   assert.equal((await d.post('/api/login', { password: PW })).status, 401, 'altes Passwort gilt nicht mehr');
   assert.equal((await d.post('/api/login', { password: 'Neues-Passwort-9' })).status, 200);
-  s.stop();
+  await s.stop();
 });
 
 test('CLI: reset-password setzt das Passwort des Hauptkontos im Einzelnutzer-Betrieb und meldet alle ab', async () => {
@@ -416,7 +416,7 @@ test('CLI: reset-password setzt das Passwort des Hauptkontos im Einzelnutzer-Bet
   assert.equal(cli('reset-password', 'egal', 'Mit-Name-Passwort-1').status, 0, 'auch mit (ignoriertem) Namen');
   assert.equal((await anon.post('/api/login', { password: 'Mit-Name-Passwort-1' })).status, 200);
   assert.match(cli('list-users').stdout, /Passwort ist festgelegt/);
-  s.stop();
+  await s.stop();
 });
 
 test('Umstellung von Einzelnutzer auf Mehrbenutzer: das Hauptkonto bekommt beim Einrichten einen Namen und behält die Daten', async () => {
@@ -424,14 +424,14 @@ test('Umstellung von Einzelnutzer auf Mehrbenutzer: das Hauptkonto bekommt beim 
   const a = client(s.base);
   await a.post('/api/setup', { secret: s.token, password: PW });
   await a.post('/api/sync', { since: 0, changes: [entry('vorher-0001')] });
-  s.stop();
+  await s.stop();
   const m = await start({ MULTIUSER: '1' }, s.dir);
   const c = client(m.base);
   assert.equal((await c.get('/api/config')).json.needsSetup, true);
   assert.equal((await c.post('/api/setup', { secret: m.token, name: 'jam', password: 'Anderes-Passwort-1' })).status, 200);
   assert.equal((await c.post('/api/sync', { since: 0 })).json.changes.length, 1);
   assert.equal((await c.get('/api/config')).json.needsSetup, false);
-  m.stop();
+  await m.stop();
 });
 
 // ---------------------------------------------------------------------------------------------
@@ -444,7 +444,7 @@ test('Fehlerhafte Anfragen liefern passende Statuscodes (413, 400)', async () =>
   let big; try { big = (await post('x'.repeat(5_100_000))).status; } catch { big = 413; } // der Server kappt die Verbindung ggf. vor dem Lesen der Antwort
   assert.equal(big, 413, 'Body über 5 MB');
   assert.equal((await post('{"since":0}')).status, 200, 'Server läuft danach weiter');
-  s.stop();
+  await s.stop();
 });
 
 // ---------------------------------------------------------------------------------------------
@@ -491,14 +491,14 @@ test('BACKUP_PASSWORD: Backups sind verschlüsselt und lassen sich zurückspiele
   const r = await c.post('/api/restore', { name });
   assert.equal(r.status, 200);
   assert.equal(r.json.count, 2, 'beide Einträge wieder da');
-  s.stop();
+  await s.stop();
   // ohne Passwort lässt sich das verschlüsselte Backup nicht zurückspielen
   const s2 = await start({ BACKUP_DIR: bdir }, dir);
   const c2 = client(s2.base);
   const r2 = await c2.post('/api/restore', { name });
   assert.equal(r2.status, 409);
   assert.equal(r2.json.error, 'password');
-  s2.stop();
+  await s2.stop();
 });
 
 test('Backups in derselben Sekunde überschreiben sich nicht', async () => {
@@ -514,7 +514,7 @@ test('Backups in derselben Sekunde überschreiben sich nicht', async () => {
     for (const n of names) assert.ok(fs.existsSync(path.join(bdir, n)), n + ' existiert');
     const list = (await c.get('/api/backups')).json.backups.map((b) => b.name);
     for (const n of names) assert.ok(list.includes(n), n + ' in der Liste');
-  } finally { s.stop(); }
+  } finally { await s.stop(); }
 });
 
 // ---------------------------------------------------------------------------------------------
@@ -539,7 +539,7 @@ test('Host-Prüfung: mit NO_AUTH nur IP/localhost (DNS-Rebinding)', async () => 
   assert.equal((await rawGet(s.base, 'localhost:' + port)).status, 200);
   assert.equal((await rawGet(s.base, '[fd00::1]:' + port)).status, 200, 'IPv6 in Klammern');
   assert.match(s.log(), /ALLOWED_HOSTS/, 'Hinweis beim Start');
-  s.stop();
+  await s.stop();
 });
 
 test('Host-Prüfung: ALLOWED_HOSTS erlaubt Namen, mit Anmeldung (auch vor der Einrichtung) bleiben Namen erlaubt', async () => {
@@ -549,7 +549,7 @@ test('Host-Prüfung: ALLOWED_HOSTS erlaubt Namen, mit Anmeldung (auch vor der Ei
   assert.equal((await rawGet(s.base, 'other.test')).status, 200);
   assert.equal((await rawGet(s.base, 'evil.example')).status, 403);
   assert.equal((await rawGet(s.base, '127.0.0.1:' + port)).status, 200);
-  s.stop();
+  await s.stop();
   const p = await start({ AUTH: '1' });
   const host = 'gutkeeper.fritz.box:' + new URL(p.base).port;
   assert.equal((await rawGet(p.base, host)).status, 200, 'vor der Einrichtung');
@@ -557,11 +557,11 @@ test('Host-Prüfung: ALLOWED_HOSTS erlaubt Namen, mit Anmeldung (auch vor der Ei
   assert.doesNotMatch(p.log(), /DNS-Rebinding/);
   await client(p.base).post('/api/setup', { secret: p.token, password: PW });
   assert.equal((await rawGet(p.base, host)).status, 200, 'nach der Einrichtung');
-  p.stop();
+  await p.stop();
   const m = await start({ MULTIUSER: '1', ALLOWED_HOSTS: 'gutkeeper.test' });
   assert.equal((await rawGet(m.base, 'evil.example')).status, 403, 'ALLOWED_HOSTS gilt auch mit Anmeldung');
   assert.equal((await rawGet(m.base, 'gutkeeper.test')).status, 200);
-  m.stop();
+  await m.stop();
 });
 
 // ---------------------------------------------------------------------------------------------
@@ -576,7 +576,7 @@ test('Andere Geräte abmelden: Mehrbenutzer', async () => {
   assert.equal((await a.get('/api/me')).status, 200, 'dieses Gerät bleibt angemeldet');
   assert.equal((await b.get('/api/me')).status, 401, 'das andere Gerät ist abgemeldet');
   assert.equal((await b.post('/api/login', { name: 'jam', password: PW })).status, 200, 'erneutes Anmelden geht');
-  s.stop();
+  await s.stop();
 });
 
 // ---------------------------------------------------------------------------------------------
@@ -589,7 +589,7 @@ async function spoofLogins(env) {
   const anon = client(s.base);
   for (let i = 0; i < 5; i++) assert.equal((await anon.post('/api/login', { name: 'x' + i, password: 'falsch-falsch' }, { 'X-Real-IP': '10.1.1.' + i })).status, 401);
   const sixth = await anon.post('/api/login', { name: 'x9', password: 'falsch-falsch' }, { 'X-Real-IP': '10.1.1.99' });
-  s.stop();
+  await s.stop();
   return sixth.status;
 }
 
@@ -600,7 +600,7 @@ test('Mehrbenutzer: gleichzeitige Fehlversuche umgehen die Sperre nicht (asynchr
   const anon = client(s.base);
   const all = await Promise.all(Array.from({ length: 12 }, () => anon.post('/api/login', { name: 'jam', password: 'falsch-falsch' })));
   const codes = all.map((r) => r.status);
-  s.stop();
+  await s.stop();
   assert.ok(codes.filter((x) => x === 401).length <= 5, 'höchstens fünf Versuche werden geprüft: ' + codes.join(','));
   assert.ok(codes.includes(429), 'der Rest wird gesperrt');
 });
@@ -618,10 +618,10 @@ test('TRUSTED_PROXY: ungültige Einträge erzeugen eine Warnung', async () => {
   const s = await start({ TRUST_PROXY: '1', TRUSTED_PROXY: 'bogus,1.2.3.4/99' });
   assert.match(s.log(), /TRUSTED_PROXY-Eintrag „bogus“ ist ungültig/);
   assert.match(s.log(), /TRUSTED_PROXY-Eintrag „1\.2\.3\.4\/99“ ist ungültig/);
-  s.stop();
+  await s.stop();
   const s2 = await start({ TRUST_PROXY: '1' });
   assert.match(s2.log(), /ohne TRUSTED_PROXY/);
-  s2.stop();
+  await s2.stop();
 });
 
 // ---------------------------------------------------------------------------------------------
@@ -650,7 +650,7 @@ test('Restore: altes Backup ohne Konten (ohne user_id, blob, foods)', async () =
   assert.deepEqual(after.foodChanges.map((f) => f.id), ['cur-food-1'], 'vorhandenes Essen bleibt erhalten');
   const bad = await c.post('/api/restore', { name: 'gutkeeper-2025-01-03_000000-auto.db' });
   assert.equal(bad.status, 409); assert.equal(bad.json.error, 'format');
-  s.stop();
+  await s.stop();
 });
 
 // ---------------------------------------------------------------------------------------------
@@ -669,7 +669,7 @@ test('Abgleich: Zeitstempel aus der Zukunft werden begrenzt', async () => {
   await b.post('/api/sync', { since: 0, changes: [entry('future-1', { note: 'neu', updated_at: Date.now() + 11 * 60000 })] });
   const after = (await b.post('/api/sync', { since: 0, changes: [] })).json;
   assert.equal(after.changes.find((e) => e.id === 'future-1').note, 'neu');
-  s.stop();
+  await s.stop();
 });
 
 test('Installations-Kennung: /api/config meldet sie, sie bleibt über Neustarts gleich und ist reiner Zufall', async () => {
@@ -677,7 +677,7 @@ test('Installations-Kennung: /api/config meldet sie, sie bleibt über Neustarts 
   const idA = (await client(a.base).get('/api/config')).json.instance;
   assert.match(idA, /^[0-9a-f]{24}$/);
   assert.equal(fs.readFileSync(path.join(a.dir, 'instance.id'), 'utf8').trim(), idA, 'liegt in data/instance.id');
-  a.stop(); await new Promise((r) => a.proc.once('exit', r));
+  await a.stop();
   const a2 = await start({ SESSION_SECRET: 'gleicher-schluessel' }, a.dir);
   assert.equal((await client(a2.base).get('/api/config')).json.instance, idA, 'stabil nach Neustart');
   // gleicher Schlüssel, anderer Datenordner: andere Kennung (also nicht aus Geheimnissen abgeleitet)
@@ -690,7 +690,7 @@ test('Installations-Kennung: /api/config meldet sie, sie bleibt über Neustarts 
   const key = fs.readFileSync(path.join(c.dir, 'session.key'), 'utf8').trim();
   assert.ok(!key.includes(idC) && !idC.includes(key.slice(0, 12)), 'nicht aus dem Sitzungsschlüssel');
   assert.equal(crypto.createHash('sha256').update(key).digest('hex').slice(0, 24) === idC, false);
-  for (const s of [a2, b, c]) s.stop();
+  for (const s of [a2, b, c]) await s.stop();
 });
 
 test('Admin-Export trägt den Herkunftskopf (Instanz, Konto, Zeitpunkt)', async () => {
@@ -711,7 +711,7 @@ test('Admin-Export trägt den Herkunftskopf (Instanz, Konto, Zeitpunkt)', async 
   const enc = (await admin.post('/api/admin/export', { user: bobId, password: 'export-pw' })).json;
   assert.ok(!JSON.stringify(enc).includes(inst), 'verschlüsselt: auch der Herkunftskopf ist nicht im Klartext');
   assert.equal(JSON.parse((await unwrap(enc, 'export-pw')).toString()).origin.instance, inst);
-  s.stop();
+  await s.stop();
 });
 
 test('Geführter Einstieg: /api/config meldet onboarding, außer mit ONBOARDING=0', async () => {
@@ -721,7 +721,7 @@ test('Geführter Einstieg: /api/config meldet onboarding, außer mit ONBOARDING=
   assert.equal((await client(on.base).get('/api/config')).json.onboarding, true, 'standardmäßig an');
   assert.equal((await client(off.base).get('/api/config')).json.onboarding, false);
   assert.equal((await client(other.base).get('/api/config')).json.onboarding, true);
-  for (const s of [off, on, other]) s.stop();
+  for (const s of [off, on, other]) await s.stop();
 });
 
 // ---------------------------------------------------------------------------------------------
@@ -776,7 +776,7 @@ test('Konto löschen (Einzelnutzer): Server beginnt wieder bei der Einrichtung, 
   assert.equal(db.prepare('SELECT COUNT(*) c FROM entries WHERE user_id = 1').get().c, 0);
   const u = db.prepare('SELECT pass, e2ee, e2ee_key FROM users').all();
   assert.equal(u.length, 1); assert.equal(u[0].pass, ''); assert.equal(u[0].e2ee_key, '');
-  db.close(); s.stop();
+  db.close(); await s.stop();
 });
 
 test('Konto löschen: falsche Passwörter zählen als Fehlversuche und sperren, nichts wird gelöscht', async () => {
@@ -789,13 +789,13 @@ test('Konto löschen: falsche Passwörter zählen als Fehlversuche und sperren, 
   assert.equal((await c.post('/api/account/delete', { password: PW })).status, 429, 'auch das richtige Passwort wartet');
   assert.equal((await c.post('/api/sync', { since: 0 })).json.changes.length, 1, 'Daten sind noch da');
   assert.equal((await client(s.base).post('/api/login', { password: PW })).status, 429, 'der Zähler gilt auch für die Anmeldung (ein Konto)');
-  s.stop();
+  await s.stop();
 });
 
 test('Konto löschen: NO_AUTH hat kein Passwort und kein Konto zum Löschen', async () => {
   const s = await start();
   assert.equal((await client(s.base).post('/api/account/delete', { password: 'x' })).json.error, 'no-lock');
-  s.stop();
+  await s.stop();
 });
 
 test('Konto löschen (Mehrbenutzer): normales Konto weg, andere Konten und ihre Daten unberührt', async () => {
@@ -823,7 +823,7 @@ test('Konto löschen (Mehrbenutzer): normales Konto weg, andere Konten und ihre 
   assert.equal(db.prepare("SELECT COUNT(*) c FROM entries WHERE id LIKE 'bob-%'").get().c, 0);
   assert.equal(db.prepare("SELECT COUNT(*) c FROM foods WHERE id LIKE 'bob-%'").get().c, 0);
   assert.equal(db.prepare('SELECT COUNT(*) c FROM entries').get().c, 2);
-  db.close(); s.stop();
+  db.close(); await s.stop();
 });
 
 test('Konto löschen (Mehrbenutzer): letzter Admin muss erst übergeben, danach geht es; das letzte Konto setzt den Server zurück', async () => {
@@ -854,7 +854,7 @@ test('Konto löschen (Mehrbenutzer): letzter Admin muss erst übergeben, danach 
   assert.equal((await bob.get('/api/me')).json.user.main, true, 'bob ist jetzt das Hauptkonto');
   assert.equal((await bob.get('/api/admin/users')).json.users.length, 1);
   assert.equal((await bob.post('/api/admin/users', { name: 'dora', password: PW })).status, 200, 'bob verwaltet weiter');
-  s.stop();
+  await s.stop();
   const s2 = await start({ MULTIUSER: '1' }, s.dir); // Neustart ohne Konto 1: kein neuer Einmal-Code, Sitzung bleibt
   assert.equal(s2.token, undefined);
   const bob2 = client(s2.base); bob2.setCookie(bob.cookie());
@@ -877,7 +877,7 @@ test('Konto löschen (Mehrbenutzer): letzter Admin muss erst übergeben, danach 
   assert.equal(me.role, 'admin'); assert.equal(me.main, true); assert.ok(me.id > bobId, 'neue ID, keine Wiederverwendung');
   assert.equal((await fresh.post('/api/sync', { since: 0 })).json.changes.length, 0);
   assert.equal((await bob2.get('/api/me')).status, 401, 'alte Sitzung bleibt ungültig');
-  s2.stop();
+  await s2.stop();
 });
 
 test('Benutzerverwaltung: auch das ursprüngliche Hauptkonto lässt sich löschen (kein Sonderfall Konto 1)', async () => {
@@ -890,7 +890,7 @@ test('Benutzerverwaltung: auch das ursprüngliche Hauptkonto lässt sich lösche
   assert.equal(r.status, 200, JSON.stringify(r.json));
   assert.equal((await bob.get('/api/admin/users')).json.users.length, 1);
   assert.equal((await jam.get('/api/me')).status, 401);
-  s.stop();
+  await s.stop();
 });
 
 test('CLI: delete-user löscht ein Konto nach Bestätigung, aber nicht den letzten Admin und nicht das letzte Konto', async () => {
@@ -909,7 +909,7 @@ test('CLI: delete-user löscht ein Konto nach Bestätigung, aber nicht den letzt
   assert.equal((await bob.get('/api/me')).status, 401, 'Sitzung ungültig');
   assert.match(cli('', 'delete-user', 'jam').stderr, /letzte Konto/);
   assert.match(cli('', 'delete-user', 'gibtsnicht').stderr, /nicht gefunden/);
-  s.stop();
+  await s.stop();
 });
 
 test('Einzelnutzer ohne Konto 1: das Hauptkonto ist das mit der kleinsten ID (Umstellung von Mehrbenutzer zurück)', async () => {
@@ -918,7 +918,7 @@ test('Einzelnutzer ohne Konto 1: das Hauptkonto ist das mit der kleinsten ID (Um
   await jam.post('/api/setup', { secret: m.token, name: 'jam', password: PW });
   await jam.post('/api/admin/users', { name: 'bob', password: 'Bobs-Passwort-1', role: 'admin' });
   assert.equal((await jam.post('/api/account/delete', { password: PW })).status, 200, 'Konto 1 gelöscht');
-  m.stop();
+  await m.stop();
   const s = await start({ AUTH: '1' }, m.dir);
   const c = client(s.base);
   assert.equal(s.token, undefined, 'bob hat ein Passwort: nichts einzurichten');
@@ -926,7 +926,7 @@ test('Einzelnutzer ohne Konto 1: das Hauptkonto ist das mit der kleinsten ID (Um
   assert.equal((await c.post('/api/login', { password: PW })).status, 401);
   assert.equal((await c.post('/api/login', { password: 'Bobs-Passwort-1' })).status, 200, 'bob (ID 2) ist jetzt das Hauptkonto');
   assert.equal((await c.get('/api/me')).status, 200);
-  s.stop();
+  await s.stop();
 });
 
 // ---------------------------------------------------------------------------------------------
@@ -971,7 +971,7 @@ test('Vorläufiges Passwort (pwTemp): gesetzt beim Anlegen/Zurücksetzen durch d
   assert.equal(cli('reset-password', 'bob', 'Per-CLI-Passwort-1').status, 0);
   const viaCli = client(s.base);
   assert.equal((await viaCli.post('/api/login', { name: 'bob', password: 'Per-CLI-Passwort-1' })).json.pwTemp, true);
-  s.stop();
+  await s.stop();
 });
 
 test('Vorläufiges Passwort: Einzelnutzer-Betrieb kennt es nicht; ältere Datenbank ohne Spalte pw_temp wird ergänzt', async () => {
@@ -981,12 +981,12 @@ test('Vorläufiges Passwort: Einzelnutzer-Betrieb kennt es nicht; ältere Datenb
   const cli = spawnSync(process.execPath, ['--disable-warning=ExperimentalWarning', path.join(ROOT, 'server/cli.js'), 'reset-password', 'Per-CLI-Passwort-1'], { env: { ...process.env, DATA_DIR: single.dir }, encoding: 'utf8' });
   assert.equal(cli.status, 0, cli.stderr);
   assert.equal((await client(single.base).post('/api/login', { password: 'Per-CLI-Passwort-1' })).json.pwTemp, false, 'Einzelnutzer: nie vorläufig');
-  single.stop();
+  await single.stop();
 
   const s = await start({ MULTIUSER: '1' });
   const admin = client(s.base);
   await admin.post('/api/setup', { secret: s.token, name: 'chef', password: PW });
-  s.stop();
+  await s.stop();
   await new Promise((r) => setTimeout(r, 300));
   const db = new DatabaseSync(path.join(s.dir, 'gutkeeper.db'));
   db.exec('ALTER TABLE users DROP COLUMN pw_temp'); // Stand vor dieser Änderung
@@ -996,7 +996,7 @@ test('Vorläufiges Passwort: Einzelnutzer-Betrieb kennt es nicht; ältere Datenb
   assert.equal((await c.post('/api/login', { name: 'chef', password: PW })).json.pwTemp, false);
   assert.equal((await c.post('/api/admin/users', { name: 'bob', password: 'Start-Passwort-1' })).status, 200);
   assert.equal((await bob.post('/api/login', { name: 'bob', password: 'Start-Passwort-1' })).json.pwTemp, true);
-  m.stop();
+  await m.stop();
 });
 
 // ---------------------------------------------------------------------------------------------
@@ -1023,7 +1023,7 @@ test('Härtung: kein 500 bei Nicht-Objekt-Bodies, Namen und %00; __proto__-IDs u
   const w = await wrap(Buffer.from('x'), 'pw12345678', 'json');
   for (const iter of [1e9, 10, -5, '600000', 5000001]) await assert.rejects(() => unwrap({ ...w, iter }, 'pw12345678'), /Runden/, String(iter));
   assert.equal((await unwrap(w, 'pw12345678')).toString(), 'x');
-  s.stop();
+  await s.stop();
 });
 
 test('Härtung: Login/Einrichtung mit Nicht-Objekt-Body liefern 400, CSV-Export entschärft Formeln', async () => {
@@ -1036,7 +1036,7 @@ test('Härtung: Login/Einrichtung mit Nicht-Objekt-Body liefern 400, CSV-Export 
   assert.equal((await c.post('/api/sync', { since: 0, changes: [entry('csv-test-0001', { note: '=1+1' }), entry('csv-test-0002', { note: '-3', time: '09:00' }), entry('csv-test-0003', { note: 'ok', time: '10:00' })] })).status, 200);
   const rows = (await c.get('/api/export.csv')).text.trim().split('\n').slice(1).map((l) => l.split(';').pop());
   assert.deepEqual(rows, ["'=1+1", '-3', 'ok']);
-  s.stop();
+  await s.stop();
 });
 
 test('Service Worker: Cache-Name aus App-Version und Datei-Hash, ändert sich mit jeder Datei', async () => {
@@ -1048,7 +1048,7 @@ test('Service Worker: Cache-Name aus App-Version und Datei-Hash, ändert sich mi
   assert.ok(!body.includes(swcache.PLACEHOLDER), 'Platzhalter wurde nicht ersetzt');
   assert.match(body, new RegExp(`const CACHE = 'gutkeeper-${version.replaceAll('.', '\\.')}-[0-9a-f]{8}'`));
   assert.equal(await (await fetch(s.base + '/sw.js')).text(), body, 'gleiche Dateien, gleicher Name');
-  s.stop();
+  await s.stop();
   // anderer Inhalt einer Datei → anderer Name; './' zählt nicht doppelt
   const sw = "const CACHE = 'x-__CACHE_VERSION__';\nconst SHELL = [\n  './', 'a.js', 'js/b.js',\n];";
   assert.deepEqual(swcache.shellOf(sw), ['a.js', 'js/b.js']);
