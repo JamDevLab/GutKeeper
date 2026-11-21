@@ -1,0 +1,28 @@
+# GutKeeper with the prebuilt image from ghcr.io: only the most important settings.
+# Values come from the file ".env" (template: cp .env.example .env); otherwise the default after ":-" applies.
+# All other options (reverse proxy, app name, icon, separate backup folder …): compose/all-options.yml
+# Build from source instead: docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
+services:
+  gutkeeper:
+    image: ghcr.io/jamdevlab/gutkeeper:1     # 1 = always the latest 1.x
+    container_name: gutkeeper
+    restart: unless-stopped
+    user: "1000:1000"                         # must be able to write to ./data
+    # Hardening: no Linux capabilities, no privilege escalation, read-only file system
+    # (only /data and /tmp are writable)
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    read_only: true
+    tmpfs: [/tmp]
+    ports:
+      - "3000:3000"
+    environment:
+      TZ: ${TZ:-Europe/Berlin}                # time zone (only used for the time in backup file names)
+      MULTIUSER: ${MULTIUSER:-0}              # 1 = several accounts (name + password), 0 = one account
+      FOOD_DEFAULT: ${FOOD_DEFAULT:-0}        # 1 = "Log food" on by default
+      CORS_ORIGINS: ${CORS_ORIGINS:-}         # https://localhost = the Android app (APK) may connect
+      BACKUP_KEEP: ${BACKUP_KEEP:-30}         # number of server backups kept (in ./data/backups)
+      # Encrypts the server backups; set it in .env only (a value containing $ goes in single quotes, e.g. 'ab$cd')
+      BACKUP_PASSWORD: ${BACKUP_PASSWORD:-}
+    volumes:
+      - ./data:/data

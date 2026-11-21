@@ -1,0 +1,155 @@
+name: Release
+# Bei einem Versions-Tag (v1.2.3): testen, Docker-Image nach ghcr.io, APK und Web-Version bauen, GitHub-Release anlegen
+on:
+  push:
+    tags: ['v*.*.*']
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      # Actions sind per Major-Tag gepinnt; für mehr Sicherheit lässt sich auch ein Commit-Digest eintragen
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm test
+
+  docker:
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write   # nötig zum Hochladen nach ghcr.io
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-qemu-action@v3        # Emulation für arm64 (NAS, Raspberry Pi)
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/jamdevlab/gutkeeper
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=raw,value=latest
+          labels: |
+            org.opencontainers.image.source=https://github.com/JamDevLab/GutKeeper
+            org.opencontainers.image.licenses=AGPL-3.0
+            org.opencontainers.image.title=GutKeeper
+            org.opencontainers.image.description=Selbst gehostetes Stuhl-Tagebuch mit Offline-App, Sync zwischen Geräten, Statistik und PDF-Bericht
+            org.opencontainers.image.documentation=https://github.com/JamDevLab/GutKeeper#readme
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  apk:
+    needs: test
+    runs-on: ubuntu-latest
+    # Umgebung "release": dort lassen sich Freigabe und Secrets (Schlüssel) einschränken
+    environment: release
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21   # Capacitor 8 braucht Java 21
+      - name: Abhängigkeiten der Android-Hülle
+        run: cd android-app && npm ci
+      - name: Version aus Tag und package.json prüfen
+        run: |
+          V="${GITHUB_REF_NAME#v}"
+          P="$(node -p "require('./package.json').version")"
+          [ "$V" = "$P" ] || { echo "::error::Tag $GITHUB_REF_NAME passt nicht zu package.json ($P)"; exit 1; }
+          echo "VERSION=$V" >> "$GITHUB_ENV"
+      - name: APK bauen und signieren
+        env:
+          KS_B64: ${{ secrets.APK_KEYSTORE_BASE64 }}
+          APK_KEYSTORE_PASS: ${{ secrets.APK_KEYSTORE_PASS }}
+          # Leer lassen, wenn Schlüssel- und Keystore-Passwort gleich sind (Standard bei keytool/PKCS12)
+          APK_KEY_PASS: ${{ secrets.APK_KEY_PASS }}
+          KEY_ALIAS: ${{ secrets.APK_KEY_ALIAS }}
+        run: |
+          if [ -z "$KS_B64" ]; then
+            echo "::error::Secret APK_KEYSTORE_BASE64 fehlt oder ist leer (Umgebung 'release' prüfen)"; exit 1
+          fi
+          if [ -z "$APK_KEYSTORE_PASS" ]; then
+            echo "::error::Secret APK_KEYSTORE_PASS fehlt"; exit 1
+          fi
+          # Keystore außerhalb des Repositorys ablegen (build-apk.js verweigert sonst)
+          echo "$KS_B64" | base64 -d > "$RUNNER_TEMP/release.jks"
+          export APK_KEYSTORE="$RUNNER_TEMP/release.jks"
+          export APK_KEY_ALIAS="${KEY_ALIAS:-gutkeeper}"
+          export ANDROID_HOME="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
+          ls "$ANDROID_HOME/build-tools"
+          node tools/build-apk.js --release
+          mkdir -p out
+          cp "android-app/android/app/build/outputs/apk/release/gutkeeper-${VERSION}.apk" out/
+      - name: Keystore löschen
+        if: always()
+        run: rm -f "$RUNNER_TEMP/release.jks"
+      - name: Web-Version (serverlos) bauen
+        run: |
+          npm run build:static
+          cp LICENSE dist/
+          (cd dist && zip -qr "../out/gutkeeper-web-${VERSION}.zip" .)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-files
+          path: out/*
+          if-no-files-found: error
+
+  release:
+    needs: [docker, apk]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # nötig zum Anlegen des Releases
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-files
+          path: out
+      - name: Release anlegen
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          VERSION="${TAG#v}"
+          P="$(node -p "require('./package.json').version")"
+          [ "$VERSION" = "$P" ] || { echo "::error::Tag $TAG passt nicht zu package.json ($P)"; exit 1; }
+          # Abschnitt "## <version>" bzw. "## [<version>]" aus dem CHANGELOG holen
+          VERSION="$VERSION" node -e '
+            const v = process.env.VERSION, lines = require("fs").readFileSync("CHANGELOG.md", "utf8").split(/\r?\n/);
+            const head = (l) => l.replace(/^##\s*\[?/, "").trim().startsWith(v);
+            const i = lines.findIndex((l) => /^##\s/.test(l) && head(l));
+            let body = "";
+            if (i >= 0) { let j = i + 1; while (j < lines.length && !/^##\s/.test(lines[j])) j++; body = lines.slice(i + 1, j).join("\n").trim(); }
+            process.stdout.write(body || "Änderungen siehe CHANGELOG.md.");
+          ' > notes.md
+          {
+            printf '\n\n---\n\n'
+            printf '**Docker:** `docker pull ghcr.io/jamdevlab/gutkeeper:%s`\n\n' "$VERSION"
+            printf '**Android:** `gutkeeper-%s.apk` herunterladen und installieren (Installation aus unbekannten Quellen erlauben). Prüfsummen in `SHA256SUMS.txt`.\n\n' "$VERSION"
+            printf '**Web ohne Server:** `gutkeeper-web-%s.zip` auf einen beliebigen Webserver (HTTPS) legen.\n' "$VERSION"
+          } >> notes.md
+          (cd out && sha256sum * > SHA256SUMS.txt)
+          gh release create "$TAG" --title "GutKeeper $VERSION" --notes-file notes.md out/*

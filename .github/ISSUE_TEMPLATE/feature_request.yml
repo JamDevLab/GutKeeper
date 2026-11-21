@@ -1,0 +1,34 @@
+name: Idee oder Wunsch (Feature request)
+description: Eine neue Funktion oder Verbesserung vorschlagen
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Bitte keine echten Gesundheitsdaten, Passwörter oder Tokens angeben.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Welches Problem möchtest du lösen? (Problem)
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: Dein Vorschlag (Proposed solution)
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternativen (Alternatives, optional)
+  - type: dropdown
+    id: variant
+    attributes:
+      label: Betrifft (Applies to)
+      multiple: true
+      options:
+        - Server/Docker
+        - Web-App ohne Server
+        - Android-App (APK)
+        - iPhone/iPad (Browser)

@@ -1,0 +1,30 @@
+# Usage: copy this file into its own empty folder (e.g. ~/gutkeeper/compose.yml) and run "docker compose up -d" there.
+# Relative paths like ./data start at the folder of this file.
+# Several accounts (name + password), backups in ./backups
+# Start: docker compose up -d
+# The first account becomes admin (one-time code in the log: docker compose logs)
+services:
+  gutkeeper:
+    image: ghcr.io/jamdevlab/gutkeeper:1
+    container_name: gutkeeper
+    restart: unless-stopped
+    user: "1000:1000"
+    # Hardening: no capabilities, no privilege escalation, read-only file system
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    read_only: true
+    tmpfs: [/tmp]
+    ports:
+      - "3000:3000"
+    environment:
+      TZ: Europe/Berlin
+      MULTIUSER: "1"             # several accounts
+      ADMIN_FULL_ACCESS: "1"     # 1 = admin may use backups and the full export, 0 = manage accounts only
+      BACKUP_KEEP: "30"          # number of server backups
+      # Encrypt backups: write the password into a .env next to this file
+      # (a value containing $ goes in single quotes) and enable the next line
+      # BACKUP_PASSWORD: ${BACKUP_PASSWORD:-}
+      BACKUP_DIR: /backups       # fixed inside the container
+    volumes:
+      - ./data:/data
+      - ./backups:/backups       # the folder must exist and be writable for user 1000

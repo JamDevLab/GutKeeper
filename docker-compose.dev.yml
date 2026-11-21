@@ -1,0 +1,7 @@
+# Development: build the image from the source code in this folder instead of pulling it from ghcr.io.
+# Extends docker-compose.yml (all settings from .env stay the same):
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
+services:
+  gutkeeper:
+    build: .
+    image: gutkeeper:dev

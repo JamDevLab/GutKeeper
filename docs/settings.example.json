@@ -1,0 +1,5 @@
+{
+  "mealTimes": { "breakfastUntil": "10:30", "lunchUntil": "15:00", "snackUntil": "17:00", "dinnerUntil": "21:30" },
+  "recentFoods": 8,
+  "colors": { "1": "#7a4e2d", "2": "#d9ccab", "3": "#d6b23a", "4": "#5d8f3a", "5": "#1f1d1c", "6": "#c0334a" }
+}

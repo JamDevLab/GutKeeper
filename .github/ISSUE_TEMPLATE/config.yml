@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Sicherheitslücke melden (privat)
+    url: https://github.com/JamDevLab/GutKeeper/security/advisories/new
+    about: Sicherheitslücken bitte nicht als öffentliches Issue melden.
+  - name: Dokumentation (README)
+    url: https://github.com/JamDevLab/GutKeeper#readme
+    about: Installation, Einstellungen und häufige Fragen.

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="ic_launcher_bristol_background">#1F3D36</color>
+    <color name="ic_launcher_classic_background">#1F3D36</color>
+    <color name="ic_launcher_list_background">#1F3D36</color>
+    <color name="ic_launcher_diary_background">#1F3D36</color>
+    <color name="ic_launcher_shield_background">#1F3D36</color>
+    <color name="ic_launcher_ring_background">#1F3D36</color>
+    <color name="ic_launcher_crest_background">#1F3D36</color>
+    <color name="ic_launcher_guard_background">#1F3D36</color>
+</resources>

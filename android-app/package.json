@@ -1,0 +1,17 @@
+{
+  "name": "gutkeeper-app",
+  "version": "1.0.0",
+  "description": "Android-Hülle (Capacitor) für GutKeeper; gebaut mit node tools/build-apk.js",
+  "license": "AGPL-3.0-only",
+  "dependencies": {
+    "@aparajita/capacitor-biometric-auth": "^10.0.0",
+    "@capacitor-community/privacy-screen": "^8.0.0",
+    "@capacitor/android": "^8.6.2",
+    "@capacitor/app": "^8.1.2",
+    "@capacitor/cli": "^8.6.2",
+    "@capacitor/core": "^8.6.2",
+    "@capacitor/filesystem": "^8.1.5",
+    "@capacitor/share": "^8.0.3"
+  },
+  "private": true
+}

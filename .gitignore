@@ -1,0 +1,36 @@
+# Daten und Geheimnisse gehören nie ins Repository
+data/*
+!data/.gitkeep
+.env
+
+node_modules/
+.tools/
+.venv/
+*.log
+*.zip
+.DS_Store
+
+# Ergebnis von npm run build:static
+dist/
+
+# Persönliche Claude-Code-Einstellungen, Schlüssel und lokale Android-Dateien
+.claude/
+*.keystore
+*.jks
+local.properties
+
+# Einzelbilder der Screenshots (nur die Übersichten gehören ins Repository; node tools/make-screenshots.js erzeugt alle neu)
+docs/screenshots/*.png
+!docs/screenshots/uebersicht.png
+!docs/screenshots/uebersicht-essen.png
+!docs/screenshots/beispiel-bericht.png
+!docs/screenshots/rueckblick*.png
+
+# Windows-Metadaten beim Kopieren aus Windows (WSL)
+*:Zone.Identifier
+
+# Lokales Hilfsskript zum Packen für das NAS (nicht im Repository)
+/pack-nas.sh
+
+# Lokale Hilfsdateien (Entwürfe, Vorschläge)
+/.t/

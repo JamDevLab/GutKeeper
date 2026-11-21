@@ -1,0 +1,36 @@
+{
+  "name": "gutkeeper",
+  "version": "1.0.0",
+  "description": "Selbst gehostetes Darm-Tagebuch / self-hosted bowel diary (PWA): Stuhlgänge erfassen, Bristol-Skala, Statistik, PDF-Bericht – offline-fähig, mit Sync und optionaler Ende-zu-Ende-Verschlüsselung.",
+  "keywords": [
+    "bowel-diary",
+    "stool-diary",
+    "bowel-movement-tracker",
+    "bristol-stool-scale",
+    "symptom-tracker",
+    "health-tracker",
+    "self-hosted",
+    "pwa",
+    "privacy",
+    "sqlite",
+    "nodejs",
+    "darmtagebuch",
+    "stuhltagebuch",
+    "digestive-health",
+    "gut-health"
+  ],
+  "license": "AGPL-3.0-only",
+  "author": "JamDevLab",
+  "private": true,
+  "type": "commonjs",
+  "main": "server/index.js",
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "start": "node --disable-warning=ExperimentalWarning server/index.js",
+    "dev": "ALLOW_ANY=1 node --disable-warning=ExperimentalWarning --watch server/index.js",
+    "build:static": "node tools/build-static.js",
+    "test": "node --disable-warning=ExperimentalWarning --test tests/server.test.js tests/e2ee.test.js tests/remote.test.js tests/client.test.js tests/autobackup.test.js tests/consistency.test.js tests/pdfcrypt.test.js"
+  }
+}

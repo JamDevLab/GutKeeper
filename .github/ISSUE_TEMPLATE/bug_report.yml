@@ -1,0 +1,60 @@
+name: Fehler melden (Bug report)
+description: Etwas funktioniert nicht wie erwartet
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Wichtig:** Bitte keine echten Gesundheitsdaten, Passwörter, Einrichtungs-Codes oder Tokens in Issues, Screenshots oder Logs! Zugangsdaten vorher schwärzen.
+        Sicherheitslücken bitte privat melden (siehe SECURITY.md).
+  - type: textarea
+    id: what
+    attributes:
+      label: Was ist passiert? (What happened?)
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Schritte zum Nachstellen (Steps to reproduce)
+      placeholder: |
+        1. ...
+        2. ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Was hast du erwartet? (Expected behavior)
+    validations:
+      required: true
+  - type: dropdown
+    id: variant
+    attributes:
+      label: Variante (Variant)
+      options:
+        - Server/Docker
+        - Web-App ohne Server
+        - Android-App (APK)
+        - iPhone/iPad (Browser)
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Zu finden unter Optionen → Über (Settings → About).
+      placeholder: z. B. 1.2.3
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Gerät und Browser (Device/browser)
+      placeholder: z. B. Pixel 8, Android 15, Chrome 130
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs oder Fehlermeldungen (optional)
+      description: Bitte ohne Passwörter und Codes.
+      render: shell

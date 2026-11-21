@@ -1,0 +1,21 @@
+# Dependencies (restore with npm ci)
+node_modules/
+
+# Web build copied from GutKeeper (npm run build:static)
+www/
+
+# Signing keys and secrets: never commit
+*.jks
+*.keystore
+*.p12
+keystore.properties
+
+# Per-machine and build output
+android/local.properties
+.gradle/
+build/
+*.apk
+*.aab
+
+# Windows metadata
+*:Zone.Identifier

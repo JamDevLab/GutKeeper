@@ -1,0 +1,27 @@
+# Usage: copy this file into its own empty folder (e.g. ~/gutkeeper/compose.yml) and run "docker compose up -d" there.
+# Relative paths like ./data start at the folder of this file.
+# Behind a reverse proxy with HTTPS (see docs/CONFIGURATION.md, "Setting up HTTPS")
+# The port is only reachable locally; the proxy points to 127.0.0.1:3000
+# or, in the same Docker network, to gutkeeper:3000
+services:
+  gutkeeper:
+    image: ghcr.io/jamdevlab/gutkeeper:1
+    container_name: gutkeeper
+    restart: unless-stopped
+    user: "1000:1000"
+    # Hardening: no capabilities, no privilege escalation, read-only file system
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    read_only: true
+    tmpfs: [/tmp]
+    ports:
+      - "127.0.0.1:3000:3000"    # reachable only through the proxy
+    environment:
+      TZ: Europe/Berlin
+      TRUST_PROXY: "1"                     # take the real client IP and HTTPS from the proxy
+      TRUSTED_PROXY: 172.18.0.0/16         # adjust to your proxy's address/network (docker network inspect)
+      ALLOWED_HOSTS: gutkeeper.example.org # your host name (protection against DNS rebinding)
+      COOKIE_SECURE: "1"                   # cookies over HTTPS only
+      CORS_ORIGINS: https://localhost      # only for the Android app (APK); otherwise remove this line
+    volumes:
+      - ./data:/data

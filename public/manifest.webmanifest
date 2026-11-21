@@ -1,0 +1,13 @@
+{
+  "name": "__APP_NAME__",
+  "short_name": "__APP_SHORT__",
+  "description": "__APP_DESC__",
+  "lang": "__LANG__",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#edf1f0",
+  "theme_color": "__THEME__",
+  "icons": __ICONS__
+}

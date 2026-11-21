@@ -1,0 +1,58 @@
+# All options, prebuilt image from ghcr.io. Settings come from the file ".env" (template: .env.example, every value is optional).
+# Usage: copy it together with your .env into its own folder (or, in the repository, replace the short file:
+#   cp compose/all-options.yml docker-compose.yml) and run "docker compose up -d" there. Relative paths like ./data start at that folder.
+# The short docker-compose.yml in the main folder has only the most important settings.
+services:
+  gutkeeper:
+    # IMAGE_TAG: 1 = always the latest 1.x (default), 1.2 = bug fixes only, 1.2.3 = fixed version
+    image: ghcr.io/jamdevlab/gutkeeper:${IMAGE_TAG:-1}
+    container_name: gutkeeper
+    restart: unless-stopped
+    user: "${PUID:-1000}:${PGID:-1000}"
+    # Hardening: no Linux capabilities, no privilege escalation, read-only file system
+    # (only /data, /backups and /tmp are writable)
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    read_only: true
+    tmpfs: [/tmp]
+    ports:
+      - "${BIND_ADDR:-0.0.0.0}:${HOST_PORT:-3000}:3000"   # BIND_ADDR=127.0.0.1: reachable only through a reverse proxy (docs/CONFIGURATION.md, "Setting up HTTPS")
+    environment:
+      TZ: ${TZ:-Europe/Berlin}                        # time zone; default: Europe/Berlin
+      # Own app name (title, lock screen). Default: empty = GutKeeper
+      APP_NAME: ${APP_NAME:-}
+      # App icon: bristol, ring, guard, crest, classic, shield, list, diary (or 1 to 8) or custom. Default: bristol
+      APP_ICON: ${APP_ICON:-bristol}
+      # Splash screen color as #RRGGBB. Default: empty = matches the icon
+      APP_THEME_COLOR: ${APP_THEME_COLOR:-}
+      # Allowed origin(s) for the APK, comma-separated, e.g. https://localhost. Default: empty = none
+      CORS_ORIGINS: ${CORS_ORIGINS:-}
+      # Allowed host names (protection against DNS rebinding), comma-separated. Default: empty = any name
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-}
+      # 1 = several accounts (name + password), 0 = one account (password only). Default: 0
+      MULTIUSER: ${MULTIUSER:-0}
+      # Default for "Log food": 1 = on, 0 = off. Default: 0
+      FOOD_DEFAULT: ${FOOD_DEFAULT:-0}
+      # 1 = guided first-run dialog after the first sign-in, 0 = off. Default: 1
+      ONBOARDING: ${ONBOARDING:-1}
+      # 1 = admin may use backups and the full export, 0 = manage accounts only. Default: 1
+      ADMIN_FULL_ACCESS: ${ADMIN_FULL_ACCESS:-1}
+      # Fixed key for the sign-in cookies. Default: empty = data/session.key
+      # If the value contains a $, put it in single quotes in .env, e.g. 'ab$cd'
+      SESSION_SECRET: ${SESSION_SECRET:-}
+      # 1 = behind a reverse proxy (real client IP, detect HTTPS). Default: 0
+      TRUST_PROXY: ${TRUST_PROXY:-0}
+      # Trusted proxy IPs or CIDR networks, comma-separated. Default: empty = any private address
+      # Set it with TRUST_PROXY=1, e.g. 172.18.0.0/16. Empty is unsafe when other devices are on the network.
+      TRUSTED_PROXY: ${TRUSTED_PROXY:-}
+      COOKIE_SECURE: ${COOKIE_SECURE:-auto}           # auto, 1 or 0; default: auto
+      LOCAL_MONTHS: ${LOCAL_MONTHS:-12}               # months stored on the device, 0 = all; default: 12
+      BACKUP_KEEP: ${BACKUP_KEEP:-30}                 # number of server backups; default: 30
+      BACKUP_INTERVAL_HOURS: ${BACKUP_INTERVAL_HOURS:-24}  # hours between backups; default: 24
+      # Encrypts server backups (AES-256, .db.enc.json). Default: empty = unencrypted
+      # If the value contains a $, put it in single quotes in .env, e.g. 'ab$cd'
+      BACKUP_PASSWORD: ${BACKUP_PASSWORD:-}
+      BACKUP_DIR: /backups                            # fixed inside the container; host folder via BACKUP_HOST_DIR
+    volumes:
+      - ./data:/data
+      - ${BACKUP_HOST_DIR:-./data/backups}:/backups   # BACKUP_HOST_DIR: another folder for the server backups (e.g. a second disk on a NAS)
