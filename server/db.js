@@ -17,9 +17,19 @@ function backupDir() {
     }
   }
   fs.mkdirSync(FALLBACK_DIR, { recursive: true });
+  try { fs.accessSync(FALLBACK_DIR, fs.constants.W_OK); } catch { log.warn(...notWritable(FALLBACK_DIR)); }
   return FALLBACK_DIR;
 }
+// Hinweis, wenn der Backup-Ordner für den Server-Benutzer nicht beschreibbar ist. Häufige Ursache: Docker legt einen fehlenden
+// Ordner für ein Volume als root an. Die Datenbank selbst läuft weiter, nur Backups schlagen fehl.
+function notWritable(dir) {
+  const id = process.getuid ? `${process.getuid()}:${process.getgid()}` : '';
+  const fix = id ? ` sudo chown -R ${id} <Ordner auf dem Host>` : '';
+  return [`[backup] Ordner ${dir} ist nicht beschreibbar${id ? ` für Benutzer ${id}` : ''}, Backups schlagen fehl. Rechte auf dem Host anpassen, z. B.${fix || ' Schreibrechte geben'}.`,
+    `[backup] Folder ${dir} is not writable${id ? ` for user ${id}` : ''}, backups fail. Fix the permissions on the host, e.g.${(fix || ' grant write access').replace('<Ordner auf dem Host>', '<folder on the host>')}.`];
+}
 const BACKUP_DIR = backupDir();
+const backupDirWritable = () => { try { fs.accessSync(BACKUP_DIR, fs.constants.W_OK); return true; } catch { return false; } };
 const DB_PATH = path.join(DATA_DIR, 'gutkeeper.db');
 const db = new DatabaseSync(DB_PATH);
 db.exec('PRAGMA busy_timeout = 5000;'); // kurz warten statt sofort „database is locked“ (z. B. wenn beim Neustart der alte Prozess die Datei noch hält)
@@ -281,4 +291,4 @@ function resetAccount(id, keepId) {
 // Gelöschte Klartext-Seiten aus der Datei entfernen (nach dem Löschen eines Kontos)
 function compact() { db.exec('VACUUM'); db.exec('PRAGMA wal_checkpoint(TRUNCATE)'); }
 
-module.exports = { db, DB_PATH, BACKUP_DIR, U, deleteUser, resetAccount, compact, PLACEHOLDER, int, clean, cleanFood, RE_DATE, q, qf, ENTRY_COLS, FOOD_COLS };
+module.exports = { db, DB_PATH, BACKUP_DIR, backupDirWritable, notWritable, U, deleteUser, resetAccount, compact, PLACEHOLDER, int, clean, cleanFood, RE_DATE, q, qf, ENTRY_COLS, FOOD_COLS };

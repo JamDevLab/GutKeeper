@@ -18,7 +18,7 @@ Passwords (e.g. `BACKUP_PASSWORD` for encrypted server backups) do not belong in
 
 > Image and variants: The compose files use the prebuilt image `ghcr.io/jamdevlab/gutkeeper` (amd64 and arm64). The tag picks the version: `1` (always the latest 1.x), `1.2` or a fixed version such as `1.2.3` (in `compose/all-options.yml` via `IMAGE_TAG`). Update: `docker compose pull && docker compose up -d`. To build from source: `docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build`.
 
-> Write permissions: by default the container runs as user 1000 and writes to `./data`. If the folder belongs to someone else, change `user:` in the compose file (with `compose/all-options.yml`: `PUID`/`PGID` in `.env`; your own IDs: `id -u`, `id -g`) or fix the permissions: `chown -R 1000:1000 data`.
+> Write permissions: by default the container runs as user 1000 and writes to `./data`. If the folder belongs to someone else, change `user:` in the compose file (with `compose/all-options.yml`: `PUID`/`PGID` in `.env`; your own IDs: `id -u`, `id -g`) or fix the permissions: `chown -R 1000:1000 data`. Docker creates a missing folder for a volume as root; if the log says that the backup folder is not writable, fix it the same way (`sudo chown -R 1000:1000 data/backups`, or the folder set in `BACKUP_HOST_DIR`). The next check, at most 10 minutes later, then makes the backup.
 
 > An overview of all three ways to use the app (server, web app without a server, Android app) with instructions for Android and iPhone is in [docs/INSTALLATION.md](INSTALLATION.md).
 

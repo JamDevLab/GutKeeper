@@ -1056,3 +1056,22 @@ test('Service Worker: Cache-Name aus App-Version und Datei-Hash, ändert sich mi
   assert.match(a, /'x-1\.0\.0-[0-9a-f]{8}'/);
   assert.notEqual(a, b);
 });
+
+test('Backup-Ordner nicht beschreibbar (z. B. von Docker als root angelegt): klare Meldung statt Stacktrace, Server läuft weiter', { skip: process.getuid && process.getuid() === 0 ? 'root ignoriert Dateirechte' : false }, async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'dp-'));
+  fs.mkdirSync(path.join(dir, 'backups'));
+  fs.chmodSync(path.join(dir, 'backups'), 0o555);
+  try {
+    const first = await start({}, dir);
+    await client(first.base).post('/api/sync', { since: 0, changes: [entry('backup-perm-01')] });
+    await first.stop();
+    const s = await start({}, dir); // mit Einträgen versucht der Start sofort ein automatisches Backup
+    assert.equal((await client(s.base).get('/api/config')).status, 200, 'Server antwortet');
+    const count = () => (s.log().match(/ist nicht beschreibbar/g) || []).length;
+    for (let i = 0; i < 60 && count() < 2 && !s.log().includes('Backup fehlgeschlagen'); i++) await new Promise((r) => setTimeout(r, 50));
+    assert.equal(count(), 2, 'Warnung beim Start und eine Meldung zum fehlgeschlagenen Backup');
+    assert.match(s.log(), /\[backup\] Folder .*backups is not writable/);
+    assert.doesNotMatch(s.log(), /Backup fehlgeschlagen|ERR_SQLITE_ERROR/, 'kein Stacktrace');
+    await s.stop();
+  } finally { fs.chmodSync(path.join(dir, 'backups'), 0o755); }
+});

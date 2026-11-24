@@ -18,7 +18,7 @@ Passwörter (z. B. `BACKUP_PASSWORD` für verschlüsselte Server-Backups) gehör
 
 > **Image und Varianten:** Die Compose-Dateien nutzen das fertige Image `ghcr.io/jamdevlab/gutkeeper` (amd64 und arm64). Das Tag bestimmt die Version: `1` (immer die neueste 1.x), `1.2` oder eine feste Version wie `1.2.3` (in `compose/all-options.yml` über `IMAGE_TAG`). Aktualisieren: `docker compose pull && docker compose up -d`. Selbst aus dem Quellcode bauen: `docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build`.
 
-> **Schreibrechte:** Der Container läuft standardmäßig als Benutzer 1000 und schreibt nach `./data`. Gehört der Ordner jemand anderem, ändere `user:` in der Compose-Datei (mit `compose/all-options.yml`: `PUID`/`PGID` in der `.env`; eigene IDs: `id -u`, `id -g`) oder passe die Rechte an: `chown -R 1000:1000 data`.
+> **Schreibrechte:** Der Container läuft standardmäßig als Benutzer 1000 und schreibt nach `./data`. Gehört der Ordner jemand anderem, ändere `user:` in der Compose-Datei (mit `compose/all-options.yml`: `PUID`/`PGID` in der `.env`; eigene IDs: `id -u`, `id -g`) oder passe die Rechte an: `chown -R 1000:1000 data`. Docker legt einen fehlenden Ordner für ein Volume als root an; meldet das Log, dass der Backup-Ordner nicht beschreibbar ist, hilft dasselbe (`sudo chown -R 1000:1000 data/backups` bzw. der Ordner aus `BACKUP_HOST_DIR`). Die nächste Prüfung, spätestens nach 10 Minuten, legt das Backup dann an.
 
 > Eine Übersicht aller drei Wege (Server, Web-App ohne Server, Android-App) mit Anleitungen für Android und iPhone findest du in [docs/INSTALLATION.de.md](INSTALLATION.de.md).
 

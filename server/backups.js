@@ -6,7 +6,7 @@ const { DatabaseSync } = require('node:sqlite');
 const { BACKUP_KEEP, BACKUP_INTERVAL_HOURS, BACKUP_PASSWORD } = require('./config');
 const { wrap, unwrap } = require('./crypto-wrap');
 const log = require('./log');
-const { db, BACKUP_DIR, U, clean, cleanFood, q, qf } = require('./db');
+const { db, BACKUP_DIR, backupDirWritable, notWritable, U, clean, cleanFood, q, qf } = require('./db');
 
 const BACKUP_RE = /^gutkeeper-[\w-]+\.db(\.enc\.json)?$/; // „.enc.json“: mit BACKUP_PASSWORD verschlüsselt
 const isEnc = (name) => name.endsWith('.enc.json');
@@ -55,6 +55,7 @@ async function makeBackup(tag) {
   return name;
 }
 
+let lastFail = null; // letzte gemeldete Ursache eines fehlgeschlagenen automatischen Backups
 async function dailyBackup() {
   try {
     if (!q.countAllUsers.get().c) return;
@@ -63,7 +64,16 @@ async function dailyBackup() {
       if (autos.some((b) => b.name.includes(stamp().slice(0, 10)))) return;
     } else if (autos.length && Date.now() - autos[0].mtime < BACKUP_INTERVAL_HOURS * 3600 * 1000) return;
     await makeBackup('auto');
-  } catch (err) { log.error('Backup fehlgeschlagen:', 'Backup failed:', err); }
+    lastFail = null;
+  } catch (err) {
+    // Die Prüfung läuft alle 10 Minuten: dieselbe Ursache nur einmal am Tag melden, nicht bei jedem Versuch
+    const denied = !backupDirWritable();
+    const key = denied ? 'denied' : `${err.code}:${err.errcode}:${err.errstr || ''}`;
+    if (lastFail && lastFail.key === key && Date.now() - lastFail.at < 24 * 3600 * 1000) return;
+    lastFail = { key, at: Date.now() };
+    if (denied) log.error(...notWritable(BACKUP_DIR));
+    else log.error('Backup fehlgeschlagen:', 'Backup failed:', err);
+  }
 }
 
 function removeBackup(name) { fs.rmSync(fileOf(name), { force: true }); }
