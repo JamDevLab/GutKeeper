@@ -1,5 +1,6 @@
 {
   "appId": "de.jamdevlab.gutkeeper",
   "appName": "GutKeeper",
-  "webDir": "www"
+  "webDir": "www",
+  "backgroundColor": "#1F3D36"
 }
