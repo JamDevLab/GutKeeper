@@ -82,7 +82,11 @@ node tools/build-apk.js
 ```
 The script builds the serverless version, copies it to `android-app/www`, syncs Capacitor and runs Gradle. The APK is then at `android-app/android/app/build/outputs/apk/debug/app-debug.apk`. Options as with `build:static` are passed through environment variables, e.g. `APP_LANG=en node tools/build-apk.js`. The version comes from `package.json`: `versionName` becomes e.g. `1.2.3`, `versionCode` becomes `MAJOR*10000 + MINOR*100 + PATCH` (10203); the script writes both into `android/app/build.gradle`.
 
-A debug APK is signed with a test key. It is not meant for distribution, and a release APK cannot be installed over it (uninstall first, and back up your data beforehand).
+A debug APK is signed with a test key and is not meant for distribution. It installs as a separate app next to the release app: app ID `de.jamdevlab.gutkeeper.dev`, name "GutKeeper Dev", its own local data and its own folder for automatic backups (`Documents/GutKeeper Dev`). Neither app touches the other's data, so you can test while you keep using the signed app.
+
+- Test with your data: export a backup in the signed app and import it in GutKeeper Dev.
+- Do not connect GutKeeper Dev to the server account you use every day. Test changes would sync to your real data, and actions such as "Delete all data" or switching end-to-end encryption on or off would reach all your devices. Use a separate test account or a test server instead.
+- Debug builds allow WebView debugging: with the phone connected over USB, `chrome://inspect` on a computer shows the console and the performance tools.
 
 ### Create a key (once)
 For a release APK you need your own key (keystore). Android recognizes updates by their being signed with the same key.

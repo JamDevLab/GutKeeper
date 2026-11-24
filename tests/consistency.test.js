@@ -108,6 +108,22 @@ test('Serverlose Version: der Marker (Meta-Tag) für den geführten Einstieg ist
   assert.ok(read('net.js').includes('meta[name="gutkeeper-onboarding"]'), 'die App liest denselben Meta-Tag');
 });
 
+test('Test-Version der APK: eigener Backup-Ordner nur mit APK_DEV=1, nie in der normalen bzw. Release-Version', () => {
+  const html = (env) => {
+    const out = fs.mkdtempSync(path.join(os.tmpdir(), 'dp-static-'));
+    const r = spawnSync(process.execPath, [path.join(__dirname, '..', 'tools', 'build-static.js')], { env: { ...process.env, APK_DEV: '', ...env, OUT: out }, encoding: 'utf8' });
+    assert.equal(r.status, 0, r.stderr);
+    const h = fs.readFileSync(path.join(out, 'index.html'), 'utf8');
+    fs.rmSync(out, { recursive: true, force: true });
+    return h;
+  };
+  assert.ok(!html({}).includes('gutkeeper-dev'), 'normale Version ohne Marker');
+  assert.ok(html({ APK_DEV: '1' }).includes('<meta name="gutkeeper-dev" content="1">'));
+  assert.ok(read('autobackup.js').includes('meta[name="gutkeeper-dev"]'), 'die App liest denselben Meta-Tag');
+  const apk = fs.readFileSync(path.join(__dirname, '..', 'tools', 'build-apk.js'), 'utf8');
+  assert.match(apk, /APK_DEV: release \? '' : '1'/, 'nur der Debug-Build setzt den Marker');
+});
+
 test('Sprachwahl nach Accept-Language: erste vorhandene Sprache, q-Werte, sonst Englisch', () => {
   const { pick } = require('../server/langs');
   const codes = ['de', 'en', 'fr'];

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Nur in der Test-Version (Debug-Build): anderer Name, damit sie neben der signierten App erkennbar ist -->
+    <string name="app_name">GutKeeper Dev</string>
+    <string name="title_activity_main">GutKeeper Dev</string>
+</resources>

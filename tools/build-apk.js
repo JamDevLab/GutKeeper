@@ -50,7 +50,7 @@ if (!/versionCode\s+\d+/.test(g) || !/versionName\s+"[^"]*"/.test(g)) { console.
 fs.writeFileSync(gradle, g.replace(/versionCode\s+\d+/, `versionCode ${versionCode}`).replace(/versionName\s+"[^"]*"/, `versionName "${version}"`));
 console.log(`Version ${version} (versionCode ${versionCode})`);
 
-run('Serverlose Version bauen', process.execPath, [path.join(__dirname, 'build-static.js')], path.join(__dirname, '..'), { OUT: path.join(app, 'www') });
+run('Serverlose Version bauen', process.execPath, [path.join(__dirname, 'build-static.js')], path.join(__dirname, '..'), { OUT: path.join(app, 'www'), APK_DEV: release ? '' : '1' }); // Test-Version: eigener Ordner für Backups
 // Vorschaubilder aller Icon-Sätze für die Auswahl „Icon auf dem Startbildschirm“ (Optionen → App)
 for (const set of ['bristol', 'classic', 'list', 'diary', 'shield', 'ring', 'crest', 'guard']) {
   const dst = path.join(app, 'www', 'icons', set);

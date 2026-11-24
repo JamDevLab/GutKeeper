@@ -17,6 +17,11 @@ android {
         }
     }
     buildTypes {
+        // Test-Version (node tools/build-apk.js ohne --release): eigene App-ID, damit sie neben der signierten App installiert
+        // werden kann (eigene Daten, Name „GutKeeper Dev“ aus src/debug/res). Die Release-APK bleibt unverändert.
+        debug {
+            applicationIdSuffix ".dev"
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'

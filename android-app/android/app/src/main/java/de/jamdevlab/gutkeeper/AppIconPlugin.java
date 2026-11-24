@@ -16,7 +16,8 @@ public class AppIconPlugin extends Plugin {
 
     private ComponentName alias(String icon) {
         String name = "Icon" + Character.toUpperCase(icon.charAt(0)) + icon.substring(1);
-        return new ComponentName(getContext().getPackageName(), getContext().getPackageName() + "." + name);
+        // Paket = App-ID (in der Test-Version mit „.dev“), Klassenname = Java-Paket aus dem Manifest (ohne Zusatz)
+        return new ComponentName(getContext().getPackageName(), MainActivity.class.getPackage().getName() + "." + name);
     }
 
     private boolean enabled(PackageManager pm, String icon) {

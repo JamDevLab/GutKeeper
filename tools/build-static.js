@@ -7,6 +7,7 @@
 //   ICON_FILE           bei APP_ICON=custom: quadratisches PNG, mindestens 512x512 px
 //   ICON_MASKABLE_FILE  optional bei custom: Bild, dessen Motiv im inneren 60 % liegt (für runde Android-Icons)
 //   APP_THEME_COLOR     Farbe der Titelleiste als #rrggbb
+//   APK_DEV             1 = Test-Version der APK (setzt build-apk.js ohne --release): eigener Backup-Ordner „GutKeeper Dev“
 //   ONBOARDING          geführter Einstieg beim ersten Start (einmal je Gerät), standardmäßig an, 0 = aus
 //   OUT                 Zielordner (Standard: dist)
 const fs = require('node:fs');
@@ -77,6 +78,7 @@ const fill = (text, escape) => text.replaceAll('__APP_NAME__', escape(name)).rep
 const metas = ['<meta name="gutkeeper-standalone" content="1">', `<meta name="gutkeeper-version" content="${require('../package.json').version}">`]; // die App merkt sich ihre Version (Vergleich mit dem Server)
 if (lang) metas.push(`<meta name="gutkeeper-lang" content="${lang}">`);
 if (process.env.ONBOARDING !== '0') metas.push('<meta name="gutkeeper-onboarding" content="1">');
+if (process.env.APK_DEV === '1') metas.push('<meta name="gutkeeper-dev" content="1">'); // nur build-apk.js ohne --release (Test-Version)
 if (customName) metas.push(`<meta name="gutkeeper-name" content="${esc(customName)}">`);
 let html = fill(fs.readFileSync(path.join(src, 'index.html'), 'utf8'), esc);
 html = html.replace('<meta charset="utf-8">', '<meta charset="utf-8">\n  ' + metas.join('\n  '));

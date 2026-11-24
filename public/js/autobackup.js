@@ -14,7 +14,10 @@ import { DEV, LS, stampStr, todayStr } from './util.js';
 
 const DAY = 86400000, NAME = /^gutkeeper-auto-[\w-]+\.json$/;
 // Ordner in „Dokumente“, unabhängig von der Sprache
-export const autoFolder = () => 'GutKeeper';
+// Test-Version der APK (Debug-Build, neben der signierten App installiert): eigener Ordner, damit ihre Backups und das Aufräumen
+// alter Dateien nie die Backups der echten App berühren
+const DEV_APK = typeof document !== 'undefined' && !!document.querySelector('meta[name="gutkeeper-dev"]');
+export const autoFolder = () => (DEV_APK ? 'GutKeeper Dev' : 'GutKeeper');
 export const KEEP_OPTIONS = [3, 5, 10, 20], KEEP_MAX = 365, DAYS_OPTIONS = [1, 7], DAYS_MAX = 365;
 // Ganze Zahl von 1 bis max aus einer Eingabe (sonst null); gemeinsam für die eigene Anzahl und das eigene Intervall
 export const parseWhole = (text, max) => { const s = String(text == null ? '' : text).trim(); return /^\d{1,4}$/.test(s) && Number(s) >= 1 && Number(s) <= max ? Number(s) : null; };

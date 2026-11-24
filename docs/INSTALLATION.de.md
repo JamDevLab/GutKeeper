@@ -82,7 +82,11 @@ node tools/build-apk.js
 ```
 Das Skript baut die serverlose Version, kopiert sie nach `android-app/www`, synchronisiert Capacitor und ruft Gradle auf. Die APK liegt danach unter `android-app/android/app/build/outputs/apk/debug/app-debug.apk`. Optionen wie bei `build:static` gehen über Umgebungsvariablen, z. B. `APP_LANG=en node tools/build-apk.js`. Die Version kommt aus `package.json`: `versionName` wird z. B. `1.2.3`, `versionCode` wird `MAJOR*10000 + MINOR*100 + PATCH` (also 10203); das Skript trägt beides in `android/app/build.gradle` ein.
 
-Eine Debug-APK ist mit einem Test-Schlüssel signiert. Zum Weitergeben ist sie nicht gedacht, und eine Release-APK lässt sich nicht über sie installieren (vorher deinstallieren, Daten vorher sichern).
+Eine Debug-APK ist mit einem Test-Schlüssel signiert und nicht zum Weitergeben gedacht. Sie wird als eigene App neben der Release-App installiert: App-ID `de.jamdevlab.gutkeeper.dev`, Name „GutKeeper Dev“, eigene lokale Daten und ein eigener Ordner für automatische Backups (`Dokumente/GutKeeper Dev`). Keine der beiden Apps berührt die Daten der anderen, du kannst also testen und die signierte App weiter nutzen.
+
+- Mit deinen Daten testen: in der signierten App ein Backup exportieren und in GutKeeper Dev importieren.
+- GutKeeper Dev nicht mit dem Server-Konto verbinden, das du täglich nutzt. Test-Änderungen würden in deine echten Daten synchronisiert, und Aktionen wie „Alle Daten löschen“ oder das Ein- und Ausschalten der Ende-zu-Ende-Verschlüsselung kämen auf allen deinen Geräten an. Nimm dafür ein eigenes Test-Konto oder einen Test-Server.
+- Debug-Builds erlauben das Debuggen der WebView: Mit dem Handy per USB am Computer zeigt `chrome://inspect` die Konsole und die Leistungswerkzeuge.
 
 ### Schlüssel erstellen (einmalig)
 Für eine Release-APK brauchst du einen eigenen Schlüssel (Keystore). Android erkennt Updates daran, dass sie mit demselben Schlüssel signiert sind.
